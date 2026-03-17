@@ -20,7 +20,12 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.angelodev1.athralworld",
+      "versionCode": 1
+    },
+    "updates": {
+      "url": "https://u.expo.dev/37a19dc9-67d9-4a90-9f0a-c55542daa2c2"
     },
     "web": {
       "favicon": "./assets/favicon.png"
