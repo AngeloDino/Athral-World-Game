@@ -29,7 +29,7 @@ const COLORS = {
   success: "#55c080",
 };
 
-export default function AuthScreen() {
+export default function AuthScreen({ onAuthSuccess }) {
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,7 +54,8 @@ export default function AuthScreen() {
     setLoading(true);
     try {
       if (mode === "register") {
-        await registerUser(email.trim(), password, username.trim());
+        const newUser = await registerUser(email.trim(), password, username.trim());
+        onAuthSuccess?.(newUser);
       } else {
         await loginUser(email.trim(), password);
       }
