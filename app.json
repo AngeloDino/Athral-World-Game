@@ -1,39 +1,32 @@
 {
   "expo": {
-    "name": "athral",
+    "name": "Athral World",
     "slug": "athral",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true
+      "backgroundColor": "#0a0a0f"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0a0a0f"
       },
-      "package": "com.angelodev1.athralworld",
-      "versionCode": 1
+      "package": "com.angelodev1.athralworld"
     },
     "updates": {
       "url": "https://u.expo.dev/37a19dc9-67d9-4a90-9f0a-c55542daa2c2"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
         "projectId": "37a19dc9-67d9-4a90-9f0a-c55542daa2c2"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
