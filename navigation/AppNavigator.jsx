@@ -4,6 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { onAuthChange } from "../firebase/auth";
+import { initNotifications } from "../systems/notificationSystem";
 
 import SplashScreen     from "../screens/SplashScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
@@ -14,6 +15,7 @@ import WorldScreen      from "../screens/WorldScreen";
 import StatisticsScreen from "../screens/StatisticsScreen";
 import CombatScreen     from "../screens/CombatScreen";
 import ZoneScreen       from "../screens/ZoneScreen";
+import SettingsScreen   from "../screens/SettingsScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -32,7 +34,7 @@ export default function AppNavigator() {
   useEffect(() => {
     const unsub = onAuthChange((firebaseUser) => {
       setUser(firebaseUser ?? null);
-      // Solo cuando Firebase confirma pasamos al splash
+      if (firebaseUser) initNotifications();
       setAppState("splash");
     });
     return unsub;
@@ -86,6 +88,7 @@ export default function AppNavigator() {
             <Stack.Screen name="Statistics" component={StatisticsScreen} />
             <Stack.Screen name="Combat"     component={CombatScreen}     />
             <Stack.Screen name="Zone"       component={ZoneScreen}       />
+            <Stack.Screen name="Settings"   component={SettingsScreen}   />
           </>
         ) : (
           <Stack.Screen name="Auth">
