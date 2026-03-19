@@ -7,6 +7,8 @@ import { auth } from "../firebase/config";
 import { listenToUserProfile } from "../firebase/firestore";
 import { logoutUser } from "../firebase/auth";
 import { xpRequiredForLevel, xpProgress } from "../systems/xpSystem";
+import { getCurrentRank } from "../systems/rankSystem";
+import { LevelUpOverlay, RankUpOverlay } from "../components/LevelUpOverlay";
 
 // ─── Theme ───────────────────────────────────────────────────────────────────
 const C = {
@@ -95,11 +97,35 @@ export default function MainMenuScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  // Level up / rank up
+  const [showLevelUp, setShowLevelUp]   = useState(false);
+  const [levelUpValue, setLevelUpValue] = useState(null);
+  const [showRankUp, setShowRankUp]     = useState(false);
+  const [rankUpValue, setRankUpValue]   = useState(null);
+  const prevLevelRef = useRef(null);
+  const prevRankRef  = useRef(null);
+
   useEffect(() => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
 
     const unsub = listenToUserProfile(uid, (data) => {
+      // Detectar level up
+      if (prevLevelRef.current !== null && data.level > prevLevelRef.current) {
+        setLevelUpValue(data.level);
+        setShowLevelUp(true);
+      }
+
+      // Detectar rank up
+      const newRank  = getCurrentRank(data);
+      if (prevRankRef.current !== null && newRank.id !== prevRankRef.current) {
+        setRankUpValue(newRank);
+        setShowRankUp(true);
+      }
+
+      prevLevelRef.current = data.level;
+      prevRankRef.current  = getCurrentRank(data).id;
+
       setProfile(data);
       setLoading(false);
       Animated.timing(fadeAnim, {
@@ -214,7 +240,6 @@ export default function MainMenuScreen({ navigation }) {
             ))}
           </View>
         </View>
-
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </Animated.View>
@@ -295,5 +320,5 @@ const styles = StyleSheet.create({
   menuBtnDesc: { color: C.textDim, fontSize: 9, textAlign: "center" },
   lockedOverlay: { position: "absolute", top: 4, right: 4 },
   lockedText: { fontSize: 10 },
-  bottomSpacer: { height: 20 },
+  bottomSpacer: { height: 20 }
 });

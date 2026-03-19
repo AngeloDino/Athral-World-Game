@@ -12,6 +12,8 @@ import MainMenuScreen   from "../screens/MainMenuScreen";
 import TrainingScreen   from "../screens/TrainingScreen";
 import WorldScreen      from "../screens/WorldScreen";
 import StatisticsScreen from "../screens/StatisticsScreen";
+import CombatScreen     from "../screens/CombatScreen";
+import ZoneScreen       from "../screens/ZoneScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -82,6 +84,8 @@ export default function AppNavigator() {
             <Stack.Screen name="Training"   component={TrainingScreen}   />
             <Stack.Screen name="World"      component={WorldScreen}      />
             <Stack.Screen name="Statistics" component={StatisticsScreen} />
+            <Stack.Screen name="Combat"     component={CombatScreen}     />
+            <Stack.Screen name="Zone"       component={ZoneScreen}       />
           </>
         ) : (
           <Stack.Screen name="Auth">

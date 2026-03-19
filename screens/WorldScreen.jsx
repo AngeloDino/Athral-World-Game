@@ -5,6 +5,8 @@ import {
 } from "react-native";
 import { auth } from "../firebase/config";
 import { ZONES, MONSTERS, TOWER, getTowerFloorMonster, TOWER_MIN_LEVEL } from "../constants/monsters";
+import { EXERCISES } from "../systems/missionSystem";
+import ResultModal from "../components/ResultModal";
 import { checkMonsterDefeated, defeatMonster, getTowerProgress, defeatTowerFloor, failTowerSession } from "../firebase/firestore";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
@@ -74,7 +76,6 @@ function CombatModal({ visible, monster, onWin, onLose, onClose }) {
   const [started, setStarted]   = useState(false);
   const [finished, setFinished] = useState(false);
   const [expired, setExpired]   = useState(false);
-  const { useState: useInputState } = require("react");
 
   const timer = useTimer(monster?.timer ?? 60, () => {
     setExpired(true);
@@ -95,7 +96,6 @@ function CombatModal({ visible, monster, onWin, onLose, onClose }) {
   const meetsGoal = entered >= monster.reps;
   const timerColor = timer.progress > 0.5 ? C.success : timer.progress > 0.25 ? C.warning : C.danger;
 
-  const { EXERCISES } = require("../systems/missionSystem");
   const exercise = EXERCISES[monster.exercise];
 
   async function handleFinish() {
@@ -210,7 +210,7 @@ function CombatModal({ visible, monster, onWin, onLose, onClose }) {
 }
 
 // ─── Zone Modal ───────────────────────────────────────────────────────────────
-function ZoneModal({ visible, zone, playerLevel, uid, onClose }) {
+function ZoneModal({ visible, zone, playerLevel, uid, onClose, onResult, onStartCombat }) {
   const [monsterStates, setMonsterStates] = useState({});
   const [loading, setLoading]             = useState(true);
   const [combatMonster, setCombatMonster] = useState(null);
@@ -232,20 +232,19 @@ function ZoneModal({ visible, zone, playerLevel, uid, onClose }) {
   }
 
   function startCombat(monster) {
-    setCombatMonster(monster);
-    setCombatVisible(true);
+    onStartCombat("monster", { monster });
   }
 
   async function handleWin(reps) {
-    setCombatVisible(false);
     await defeatMonster(uid, combatMonster);
     setMonsterStates(prev => ({ ...prev, [combatMonster.id]: true }));
-    Alert.alert("¡Victoria! ⚔️", `Derrotaste a ${combatMonster.name}\n+${combatMonster.xp} XP`, [{ text: "¡Genial!" }]);
+    setCombatVisible(false);
+    onResult?.("victory", "¡Victoria!", `Derrotaste a ${combatMonster.name}\n+${combatMonster.xp} XP`);
   }
 
   async function handleLose(reps) {
     setCombatVisible(false);
-    Alert.alert("Derrota 💀", `No completaste los reps necesarios.\n${combatMonster.name} sigue en pie.`, [{ text: "Intentar de nuevo" }]);
+    onResult?.("defeat", "Derrota", `No completaste los reps necesarios.\n${combatMonster.name} sigue en pie.`);
   }
 
   if (!zone) return null;
@@ -276,8 +275,7 @@ function ZoneModal({ visible, zone, playerLevel, uid, onClose }) {
                 <Text style={styles.monsterListLabel}>MONSTRUOS DISPONIBLES</Text>
                 {zoneMonsters.map((monster) => {
                   const defeated = monsterStates[monster.id];
-                  const { EXERCISES } = require("../systems/missionSystem");
-                  const exercise = EXERCISES[monster.exercise];
+                                const exercise = EXERCISES[monster.exercise];
                   return (
                     <View key={monster.id} style={[styles.monsterCard, defeated && styles.monsterCardDefeated]}>
                       <View style={styles.monsterCardLeft}>
@@ -328,12 +326,13 @@ function ZoneModal({ visible, zone, playerLevel, uid, onClose }) {
         onLose={handleLose}
         onClose={() => setCombatVisible(false)}
       />
+
     </>
   );
 }
 
 // ─── Tower Modal ──────────────────────────────────────────────────────────────
-function TowerModal({ visible, playerLevel, uid, towerRecord, onClose }) {
+function TowerModal({ visible, playerLevel, uid, towerRecord, onClose, onResult, onStartCombat }) {
   const [session, setSession]         = useState(null);
   const [loading, setLoading]         = useState(true);
   const [combatMonster, setCombatMonster] = useState(null);
@@ -355,31 +354,22 @@ function TowerModal({ visible, playerLevel, uid, towerRecord, onClose }) {
 
   function startFloor() {
     const monster = getTowerFloorMonster(currentFloor);
-    setCombatMonster(monster);
-    setCombatVisible(true);
+    onStartCombat("tower", { monster, towerRecord });
   }
 
   async function handleFloorWin(reps) {
-    setCombatVisible(false);
     await defeatTowerFloor(uid, combatMonster);
     const nextFloor = currentFloor + 1;
     setCurrentFloor(nextFloor);
-    Alert.alert(
-      `¡Piso ${currentFloor} superado! 🏆`,
-      `+${combatMonster.xp} XP\nSiguiente: Piso ${nextFloor}`,
-      [{ text: "Seguir subiendo" }]
-    );
+    setCombatVisible(false);
+    onResult?.("victory", `¡Piso ${currentFloor} Superado!`, `+${combatMonster.xp} XP\nSiguiente: Piso ${nextFloor}`);
   }
 
   async function handleFloorLose(reps) {
-    setCombatVisible(false);
     await failTowerSession(uid);
     setSession(prev => ({ ...prev, active: false, defeated: true }));
-    Alert.alert(
-      "Caíste en la Torre 💀",
-      `Llegaste al piso ${currentFloor}.\nTu récord: Piso ${Math.max(towerRecord ?? 0, currentFloor - 1)}\nRegresa mañana para intentarlo de nuevo.`,
-      [{ text: "Salir", onPress: onClose }]
-    );
+    setCombatVisible(false);
+    onResult?.("defeat", "Caíste en la Torre", `Llegaste al piso ${currentFloor}.\nTu récord: Piso ${Math.max(towerRecord ?? 0, currentFloor - 1)}\nRegresa mañana para intentarlo de nuevo.`, true);
   }
 
   const locked        = playerLevel < TOWER_MIN_LEVEL;
@@ -474,6 +464,7 @@ function TowerModal({ visible, playerLevel, uid, towerRecord, onClose }) {
         onLose={handleFloorLose}
         onClose={() => { setCombatVisible(false); failTowerSession(uid); setSession(p => ({...p, defeated:true})); }}
       />
+
     </>
   );
 }
@@ -485,9 +476,31 @@ export default function WorldScreen({ navigation }) {
   const [selectedZone, setSelectedZone] = useState(null);
   const [towerVisible, setTowerVisible] = useState(false);
   const [loading, setLoading]           = useState(true);
+  const [resultModal, setResultModal]   = useState({ visible: false, type: "info", title: "", message: "", closeFn: null });
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  function handleResult(type, title, message, closeAfter = false) {
+    setResultModal({
+      visible: true, type, title, message,
+      closeFn: closeAfter ? () => { setSelectedZone(null); setTowerVisible(false); } : null,
+    });
+  }
+
   const uid = auth.currentUser?.uid;
+
+  function handleStartCombat(mode, params) {
+    // Cerrar modales antes de navegar al combate
+    navigation.navigate("Combat", { mode, uid, ...params });
+  }
+
+  // Cuando regresamos del combate, cerrar todos los modales
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      setSelectedZone(null);
+      setTowerVisible(false);
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   useEffect(() => {
     async function init() {
@@ -543,7 +556,7 @@ export default function WorldScreen({ navigation }) {
                   { borderColor: locked ? C.border : zone.color },
                   locked && styles.zoneCardLocked,
                 ]}
-                onPress={() => !locked && setSelectedZone(zone)}
+                onPress={() => !locked && navigation.navigate("Zone", { zone })}
                 activeOpacity={locked ? 1 : 0.8}
               >
                 <Text style={styles.zoneCard2Emoji}>{zone.emoji}</Text>
@@ -604,6 +617,8 @@ export default function WorldScreen({ navigation }) {
         playerLevel={playerLevel}
         uid={uid}
         onClose={() => setSelectedZone(null)}
+        onResult={handleResult}
+        onStartCombat={handleStartCombat}
       />
 
       {/* Tower Modal */}
@@ -613,6 +628,20 @@ export default function WorldScreen({ navigation }) {
         uid={uid}
         towerRecord={towerRecord}
         onClose={() => setTowerVisible(false)}
+        onResult={handleResult}
+        onStartCombat={handleStartCombat}
+      />
+
+      {/* Result Modal — fuera de ScrollView y modales, cubre toda la pantalla */}
+      <ResultModal
+        visible={resultModal.visible}
+        type={resultModal.type}
+        title={resultModal.title}
+        message={resultModal.message}
+        onClose={() => {
+          setResultModal(r => ({ ...r, visible: false }));
+          resultModal.closeFn?.();
+        }}
       />
     </Animated.View>
   );
