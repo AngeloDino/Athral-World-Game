@@ -1,36 +1,29 @@
-import { useEffect, useState } from "react";
-import { View, Text, ActivityIndicator, StyleSheet, Animated } from "react-native";
+import { useEffect, useState, useRef } from "react";
+import { View, ActivityIndicator, StyleSheet, Animated } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { onAuthChange } from "../firebase/auth";
 import { initNotifications } from "../systems/notificationSystem";
 
-import SplashScreen     from "../screens/SplashScreen";
-import OnboardingScreen from "../screens/OnboardingScreen";
-import AuthScreen       from "../screens/AuthScreen";
-import MainMenuScreen   from "../screens/MainMenuScreen";
-import TrainingScreen   from "../screens/TrainingScreen";
-import WorldScreen      from "../screens/WorldScreen";
-import StatisticsScreen from "../screens/StatisticsScreen";
-import CombatScreen     from "../screens/CombatScreen";
-import ZoneScreen       from "../screens/ZoneScreen";
-import SettingsScreen   from "../screens/SettingsScreen";
+import SplashScreen             from "../screens/SplashScreen";
+import OnboardingScreen         from "../screens/OnboardingScreen";
+import AuthScreen               from "../screens/AuthScreen";
+import MainMenuScreen           from "../screens/MainMenuScreen";
+import TrainingScreen           from "../screens/TrainingScreen";
+import WorldScreen              from "../screens/WorldScreen";
+import StatisticsScreen         from "../screens/StatisticsScreen";
+import CombatScreen             from "../screens/CombatScreen";
+import ZoneScreen               from "../screens/ZoneScreen";
+import SettingsScreen           from "../screens/SettingsScreen";
+import CharacterCreationScreen  from "../screens/CharacterCreationScreen";
 
 const Stack = createNativeStackNavigator();
-
-// Estados en orden estricto:
-// "waiting"    → esperando que Firebase confirme auth (pantalla de carga)
-// "splash"     → Firebase ya respondió, mostramos splash
-// "onboarding" → usuario nuevo
-// "auth"       → no logueado
-// "app"        → logueado
 
 export default function AppNavigator() {
   const [user, setUser]         = useState(undefined);
   const [appState, setAppState] = useState("waiting");
 
-  // Paso 1 — Firebase responde
   useEffect(() => {
     const unsub = onAuthChange((firebaseUser) => {
       setUser(firebaseUser ?? null);
@@ -40,42 +33,37 @@ export default function AppNavigator() {
     return unsub;
   }, []);
 
-  // Paso 2 — Splash termina
   async function handleSplashFinish() {
-    if (!user) {
-      setAppState("auth");
-      return;
-    }
-    const done = await AsyncStorage.getItem(`onboarding_done_${user.uid}`);
-    setAppState(done ? "app" : "onboarding");
+    if (!user) { setAppState("auth"); return; }
+    const onboardingDone = await AsyncStorage.getItem(`onboarding_done_${user.uid}`);
+    const characterDone  = await AsyncStorage.getItem(`character_created_${user.uid}`);
+    if (!onboardingDone)      setAppState("onboarding");
+    else if (!characterDone)  setAppState("character");
+    else                      setAppState("app");
   }
 
-  // Paso 3 — Onboarding termina
   async function handleOnboardingFinish() {
-    if (user) {
-      await AsyncStorage.setItem(`onboarding_done_${user.uid}`, "true");
-    }
+    if (user) await AsyncStorage.setItem(`onboarding_done_${user.uid}`, "true");
+    setAppState("character");
+  }
+
+  async function handleCharacterCreationFinish() {
+    if (user) await AsyncStorage.setItem(`character_created_${user.uid}`, "true");
     setAppState("app");
   }
 
-  // Paso 4 — Usuario nuevo se registra
   async function handleAuthSuccess(newUser) {
-    const done = await AsyncStorage.getItem(`onboarding_done_${newUser.uid}`);
-    setAppState(done ? "app" : "onboarding");
+    const onboardingDone = await AsyncStorage.getItem(`onboarding_done_${newUser.uid}`);
+    const characterDone  = await AsyncStorage.getItem(`character_created_${newUser.uid}`);
+    if (!onboardingDone)     setAppState("onboarding");
+    else if (!characterDone) setAppState("character");
+    else                     setAppState("app");
   }
 
-  // ── Pantalla de carga mientras Firebase valida ────────────────────────────
-  if (appState === "waiting") {
-    return <LoadingScreen />;
-  }
-
-  if (appState === "splash") {
-    return <SplashScreen onFinish={handleSplashFinish} />;
-  }
-
-  if (appState === "onboarding") {
-    return <OnboardingScreen onFinish={handleOnboardingFinish} />;
-  }
+  if (appState === "waiting") return <LoadingScreen />;
+  if (appState === "splash")  return <SplashScreen onFinish={handleSplashFinish} />;
+  if (appState === "onboarding") return <OnboardingScreen onFinish={handleOnboardingFinish} />;
+  if (appState === "character")  return <CharacterCreationScreen onFinish={handleCharacterCreationFinish} />;
 
   return (
     <NavigationContainer>
@@ -100,9 +88,8 @@ export default function AppNavigator() {
   );
 }
 
-// ── Pantalla de carga ─────────────────────────────────────────────────────────
 function LoadingScreen() {
-  const pulse = new Animated.Value(0.4);
+  const pulse = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
     Animated.loop(
@@ -114,21 +101,13 @@ function LoadingScreen() {
   }, []);
 
   return (
-    <View style={styles.loadingRoot}>
-      <Animated.Text style={[styles.loadingEmoji, { opacity: pulse }]}>⚔️</Animated.Text>
+    <View style={styles.root}>
+      <Animated.Text style={{ fontSize: 48, opacity: pulse }}>⚔️</Animated.Text>
       <ActivityIndicator size="small" color="#4a3f8a" style={{ marginTop: 24 }} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  loadingRoot: {
-    flex: 1,
-    backgroundColor: "#0a0a0f",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingEmoji: {
-    fontSize: 48,
-  },
+  root: { flex:1, backgroundColor:"#0a0a0f", justifyContent:"center", alignItems:"center" },
 });

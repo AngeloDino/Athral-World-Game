@@ -7,6 +7,7 @@ import { auth } from "../firebase/config";
 import { getTodayMissions, listenToTodayMissions } from "../firebase/firestore";
 import { EXERCISES, MISSION_XP, FREE_TRAIN_DURATIONS } from "../systems/missionSystem";
 import { DIFFICULTY_CONFIG_MAP } from "../constants/combatConfig";
+import { TutorialOverlay } from "../components/TutorialOverlay";
 
 const C = {
   bg:"#0a0a0f", surface:"#12121a", surface2:"#1a1a28",
@@ -173,6 +174,8 @@ export default function TrainingScreen({ navigation }) {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      <TutorialOverlay sectionKey="training" />
     </View>
   );
 }

@@ -9,6 +9,7 @@ import { listenToUserProfile } from "../firebase/firestore";
 import { xpRequiredForLevel, xpProgress } from "../systems/xpSystem";
 import { getCurrentRank } from "../systems/rankSystem";
 import { LevelUpOverlay, RankUpOverlay } from "../components/LevelUpOverlay";
+import { TutorialOverlay } from "../components/TutorialOverlay";
 
 const { width: W } = Dimensions.get("window");
 
@@ -147,7 +148,7 @@ export default function MainMenuScreen({ navigation }) {
           {/* Avatar + nivel */}
           <View style={styles.avatarCol}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarEmoji}>🧙</Text>
+              <Text style={styles.avatarEmoji}>{profile?.avatar ?? "🧙"}</Text>
             </View>
             <View style={styles.levelBadge}>
               <Text style={styles.levelLV}>LV</Text>
@@ -234,6 +235,9 @@ export default function MainMenuScreen({ navigation }) {
           onFinish={() => { setShowRankUp(false); setRankUpValue(null); }}
         />
       )}
+
+      {/* Tutorial */}
+      <TutorialOverlay sectionKey="mainMenu" />
     </Animated.View>
   );
 }

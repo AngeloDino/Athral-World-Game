@@ -6,6 +6,7 @@ import {
 import { auth } from "../firebase/config";
 import { listenToUserProfile } from "../firebase/firestore";
 import { getCurrentRank, getNextRank, getRankProgress, getTotalStats, RANKS } from "../systems/rankSystem";
+import { TutorialOverlay } from "../components/TutorialOverlay";
 import { xpRequiredForLevel } from "../systems/xpSystem";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
@@ -300,6 +301,8 @@ export default function StatisticsScreen({ navigation }) {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      <TutorialOverlay sectionKey="statistics" />
     </Animated.View>
   );
 }

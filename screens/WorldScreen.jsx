@@ -7,6 +7,7 @@ import { auth } from "../firebase/config";
 import { ZONES, MONSTERS, TOWER, getTowerFloorMonster, TOWER_MIN_LEVEL } from "../constants/monsters";
 import { EXERCISES } from "../systems/missionSystem";
 import ResultModal from "../components/ResultModal";
+import { TutorialOverlay } from "../components/TutorialOverlay";
 import { checkMonsterDefeated, defeatMonster, getTowerProgress, defeatTowerFloor, failTowerSession } from "../firebase/firestore";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
@@ -631,6 +632,9 @@ export default function WorldScreen({ navigation }) {
         onResult={handleResult}
         onStartCombat={handleStartCombat}
       />
+
+      {/* Tutorial */}
+      <TutorialOverlay sectionKey="world" />
 
       {/* Result Modal — fuera de ScrollView y modales, cubre toda la pantalla */}
       <ResultModal
