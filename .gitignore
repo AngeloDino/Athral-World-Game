@@ -45,6 +45,3 @@ yarn-error.*
 
 # cmdtools
 cmdtools/
-
-# zip
-*.zip

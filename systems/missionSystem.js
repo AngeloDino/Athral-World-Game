@@ -6,38 +6,92 @@ export const EXERCISES = {
   situps:  { label: "Sit-ups",  emoji: "🔥", stat: "END", secondaryStat: "STR" },
 };
 
-// Tiempo límite por dificultad (en segundos)
 export const MISSION_TIME = {
-  easy:   2 * 60,   // 2 minutos
-  medium: 4 * 60,   // 4 minutos
-  hard:   6 * 60,   // 6 minutos
+  easy:   2 * 60,
+  medium: 4 * 60,
+  hard:   6 * 60,
 };
 
 const BASE_REPS = {
-  easy:   { min: 10, max: 20 },
-  medium: { min: 25, max: 40 },
-  hard:   { min: 45, max: 70 },
+  easy:   { min: 8,  max: 15 },   // Reducido para curva más accesible
+  medium: { min: 18, max: 30 },
+  hard:   { min: 35, max: 55 },
 };
 
 export const MISSION_XP = {
-  easy:   50,
-  medium: 100,
-  hard:   175,
+  easy:   60,    // Subido de 50
+  medium: 120,   // Subido de 100
+  hard:   200,   // Subido de 175
 };
 
-// Opciones de duración para modo libre (en minutos)
 export const FREE_TRAIN_DURATIONS = [5, 10, 15, 20];
 
-export function generateDailyMissions(playerLevel = 1) {
-  const scale        = 1 + Math.floor(playerLevel / 10) * 0.2;
+// Tipos de misión para variedad
+const MISSION_TYPES = [
+  { type: "reps",    label: "Reps normales",   desc: (reps, ex) => `Completa ${reps} ${ex}` },
+  { type: "reps",    label: "Reps normales",   desc: (reps, ex) => `Completa ${reps} ${ex}` }, // mayor peso = más frecuente
+  { type: "reps",    label: "Reps normales",   desc: (reps, ex) => `Completa ${reps} ${ex}` },
+];
+
+// Genera misiones del día con variedad según clase y enfoque del jugador
+export function generateDailyMissions(playerLevel = 1, playerClass = null, playerFocus = null) {
+  const scale        = 1 + Math.floor(playerLevel / 10) * 0.15;
   const exerciseKeys = Object.keys(EXERCISES);
-  const shuffled     = [...exerciseKeys].sort(() => Math.random() - 0.5);
+
+  // Si el jugador tiene clase/enfoque, priorizar sus ejercicios favoritos
+  let pool = [...exerciseKeys];
+  if (playerClass || playerFocus) {
+    pool = buildExercisePool(playerClass, playerFocus, exerciseKeys);
+  }
+
+  // Mezclar y asignar
+  const shuffled = pool.sort(() => Math.random() - 0.5);
 
   return {
-    easy:   { exercise: shuffled[0], reps: randomReps(BASE_REPS.easy,   scale), completed: false, xp: MISSION_XP.easy   },
-    medium: { exercise: shuffled[1], reps: randomReps(BASE_REPS.medium, scale), completed: false, xp: MISSION_XP.medium },
-    hard:   { exercise: shuffled[2], reps: randomReps(BASE_REPS.hard,   scale), completed: false, xp: MISSION_XP.hard   },
+    easy: {
+      exercise: shuffled[0] ?? exerciseKeys[0],
+      reps:     randomReps(BASE_REPS.easy, scale),
+      completed: false,
+      xp:        MISSION_XP.easy,
+    },
+    medium: {
+      exercise: shuffled[1] ?? exerciseKeys[1],
+      reps:     randomReps(BASE_REPS.medium, scale),
+      completed: false,
+      xp:        MISSION_XP.medium,
+    },
+    hard: {
+      exercise: shuffled[2] ?? exerciseKeys[2],
+      reps:     randomReps(BASE_REPS.hard, scale),
+      completed: false,
+      xp:        MISSION_XP.hard,
+    },
   };
+}
+
+// Construye un pool de ejercicios priorizando la clase/enfoque del jugador
+function buildExercisePool(classId, focusId, allExercises) {
+  const CLASS_EXERCISES = {
+    warrior:  ["pushups", "pushups", "squats", "situps"],
+    mage:     ["situps",  "situps",  "pushups", "squats"],
+    archer:   ["squats",  "squats",  "pushups", "situps"],
+    monk:     ["pushups", "squats",  "situps"],
+    assassin: ["squats",  "pushups", "squats",  "situps"],
+  };
+
+  const FOCUS_EXERCISES = {
+    strength:  ["pushups", "pushups", "squats", "situps"],
+    cardio:    ["situps",  "squats",  "situps",  "pushups"],
+    agility:   ["squats",  "squats",  "pushups", "situps"],
+    balanced:  ["pushups", "squats",  "situps"],
+    endurance: ["situps",  "situps",  "squats",  "pushups"],
+  };
+
+  const classPool = CLASS_EXERCISES[classId] ?? allExercises;
+  const focusPool = FOCUS_EXERCISES[focusId] ?? allExercises;
+
+  // Mezcla 60% clase + 40% enfoque
+  return [...classPool, ...classPool, ...focusPool].sort(() => Math.random() - 0.5);
 }
 
 function randomReps({ min, max }, scale) {

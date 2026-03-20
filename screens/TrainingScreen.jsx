@@ -70,6 +70,7 @@ export default function TrainingScreen({ navigation }) {
   const [missions, setMissions] = useState(null);
   const [loading, setLoading]   = useState(true);
   const uid = auth.currentUser?.uid;
+  const [playerClass, setPlayerClass] = useState(null);
 
   useEffect(() => {
     if (!uid) return;
@@ -77,8 +78,12 @@ export default function TrainingScreen({ navigation }) {
       const { getDoc, doc } = await import("firebase/firestore");
       const { db } = await import("../firebase/config");
       const snap  = await getDoc(doc(db, "users", uid));
-      const level = snap.exists() ? snap.data().level : 1;
-      await getTodayMissions(uid, level);
+      const data  = snap.exists() ? snap.data() : {};
+      const level = data.level ?? 1;
+      const cls   = data.class ?? null;
+      const focus = data.focus ?? null;
+      setPlayerClass(cls);
+      await getTodayMissions(uid, level, cls, focus);
       setLoading(false);
     }
     init();
@@ -87,11 +92,11 @@ export default function TrainingScreen({ navigation }) {
   }, [uid]);
 
   function startMission(difficulty, mission) {
-    navigation.navigate("Combat", { mode: "mission", difficulty, mission });
+    navigation.navigate("Combat", { mode: "mission", difficulty, mission, playerClass });
   }
 
   function startFree(exercise, durationMinutes) {
-    navigation.navigate("Combat", { mode: "free", exercise, durationMinutes });
+    navigation.navigate("Combat", { mode: "free", exercise, durationMinutes, playerClass });
   }
 
   const completedCount = missions ? ["easy","medium","hard"].filter(d => missions[d]?.completed).length : 0;

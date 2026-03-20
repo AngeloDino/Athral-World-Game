@@ -5,8 +5,11 @@ import {
 } from "react-native";
 import { auth } from "../firebase/config";
 import { listenToUserProfile } from "../firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
 import { getCurrentRank, getNextRank, getRankProgress, getTotalStats, RANKS } from "../systems/rankSystem";
 import { TutorialOverlay } from "../components/TutorialOverlay";
+import { RankUpOverlay } from "../components/LevelUpOverlay";
 import { xpRequiredForLevel } from "../systems/xpSystem";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
@@ -95,7 +98,10 @@ const rankStyles = StyleSheet.create({
 export default function StatisticsScreen({ navigation }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim     = useRef(new Animated.Value(0)).current;
+  const [rankingUp, setRankingUp]   = useState(false);
+  const [showRankUp, setShowRankUp] = useState(false);
+  const [rankUpValue, setRankUpValue] = useState(null);
 
   useEffect(() => {
     const uid = auth.currentUser?.uid;
@@ -126,6 +132,24 @@ export default function StatisticsScreen({ navigation }) {
 
   // Stat bar max = 500 para visualización
   const STAT_MAX = 500;
+
+  // Verificar si el jugador puede subir de rango
+  const canRankUp = nextRank && rankProgress && Object.values(rankProgress).every(r => r.progress >= 1);
+
+  async function handleRankUp() {
+    if (!canRankUp || rankingUp) return;
+    setRankingUp(true);
+    try {
+      const uid = auth.currentUser?.uid;
+      await updateDoc(doc(db, "users", uid), { rank: nextRank.id });
+      setRankUpValue(nextRank);
+      setShowRankUp(true);
+    } catch(e) {
+      console.error(e);
+    } finally {
+      setRankingUp(false);
+    }
+  }
 
   const overviewItems = [
     { label: "NIVEL",             value: profile?.level ?? 1,           color: C.accent },
@@ -172,7 +196,20 @@ export default function StatisticsScreen({ navigation }) {
         {/* ── Rank Progress ── */}
         {nextRank && rankProgress && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>PROGRESO AL RANGO {nextRank.label}</Text>
+            <View style={styles.rankProgressHeader}>
+              <Text style={[styles.sectionLabel, { marginBottom:0 }]}>PROGRESO AL RANGO {nextRank.label}</Text>
+              {canRankUp && (
+                <TouchableOpacity
+                  style={[styles.rankUpBtn, rankingUp && { opacity:0.5 }]}
+                  onPress={handleRankUp}
+                  disabled={rankingUp}
+                >
+                  <Text style={styles.rankUpBtnText}>
+                    {rankingUp ? "..." : `⬆ SUBIR A ${nextRank.label}`}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <View style={styles.rankProgressCard}>
               {[
                 { key: "level",          label: "Nivel",              emoji: "⭐" },
@@ -303,6 +340,12 @@ export default function StatisticsScreen({ navigation }) {
       </ScrollView>
 
       <TutorialOverlay sectionKey="statistics" />
+
+      <RankUpOverlay
+        visible={showRankUp}
+        newRank={rankUpValue}
+        onFinish={() => { setShowRankUp(false); setRankUpValue(null); }}
+      />
     </Animated.View>
   );
 }
@@ -337,7 +380,10 @@ const styles = StyleSheet.create({
   statsTotalBadge: { color:C.accent, fontSize:12, fontWeight:"900" },
 
   // Rank progress
-  rankProgressCard: { backgroundColor:C.surface, borderWidth:1, borderColor:C.border, borderRadius:4, padding:16, gap:14 },
+  rankProgressCard:   { backgroundColor:C.surface, borderWidth:1, borderColor:C.border, borderRadius:4, padding:16, gap:14 },
+  rankProgressHeader: { flexDirection:"row", justifyContent:"space-between", alignItems:"center", marginBottom:10 },
+  rankUpBtn:          { backgroundColor:"#e8c84a", paddingHorizontal:12, paddingVertical:8, borderRadius:4 },
+  rankUpBtnText:      { color:"#0a0a0f", fontSize:11, fontWeight:"900", letterSpacing:1 },
   reqRow:       { gap:8 },
   reqLeft:      { flexDirection:"row", alignItems:"center", gap:10 },
   reqEmoji:     { fontSize:18, width:28 },

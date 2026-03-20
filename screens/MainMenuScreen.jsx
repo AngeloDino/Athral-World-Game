@@ -119,7 +119,10 @@ export default function MainMenuScreen({ navigation }) {
   }
 
   const stats       = profile?.stats || { STR:0, AGI:0, END:0, VIT:0 };
-  const currentRank = getCurrentRank(profile);
+  // Usar el rango guardado en Firestore (subida manual)
+  const savedRankId  = profile?.rank ?? "F";
+  const { RANKS: ALL_RANKS } = require("../systems/rankSystem");
+  const currentRank  = ALL_RANKS.find(r => r.id === savedRankId) ?? ALL_RANKS[0];
   const streak      = profile?.streak ?? 0;
 
   return (

@@ -1,10 +1,17 @@
 // ─── constants/monsters.js ────────────────────────────────────────────────────
-// Toda la data de zonas y monstruos del mundo de Athral
 
-// Nivel mínimo para acceder a la Torre de Babel
 export const TOWER_MIN_LEVEL = 10;
 
-// ─── Zonas normales ───────────────────────────────────────────────────────────
+// Multiplicador de XP por zona (x2 por cada zona)
+export const ZONE_XP_MULTIPLIERS = {
+  dark_forest:      1.0,
+  crystal_cave:     2.0,
+  ruined_fortress:  4.0,
+  magic_swamp:      8.0,
+  snowy_mountain:   16.0,
+};
+
+// ─── Zonas ────────────────────────────────────────────────────────────────────
 export const ZONES = [
   {
     id:          "dark_forest",
@@ -14,7 +21,9 @@ export const ZONES = [
     color:       "#2d5a27",
     colorDark:   "#1a3318",
     minLevel:    1,
+    xpMultiplier: 1.0,
     monsters:    ["slime_verde", "lobo_sombra", "treant_podrido"],
+    boss:        "guardian_bosque",
   },
   {
     id:          "crystal_cave",
@@ -24,7 +33,9 @@ export const ZONES = [
     color:       "#2d4a7a",
     colorDark:   "#1a2d50",
     minLevel:    5,
+    xpMultiplier: 2.0,
     monsters:    ["goblin_minero", "elemental_cristal", "golem_roca"],
+    boss:        "rey_cristal",
   },
   {
     id:          "ruined_fortress",
@@ -34,7 +45,9 @@ export const ZONES = [
     color:       "#6b4a2a",
     colorDark:   "#3d2a18",
     minLevel:    10,
+    xpMultiplier: 4.0,
     monsters:    ["esqueleto_guardia", "caballero_espectral", "arcanista_maldito"],
+    boss:        "senor_oscuro",
   },
   {
     id:          "magic_swamp",
@@ -44,7 +57,9 @@ export const ZONES = [
     color:       "#3d5a2a",
     colorDark:   "#243318",
     minLevel:    15,
-    monsters:    ["rana_venenosa", "hidra_pantano", "bruja_ciénaga"],
+    xpMultiplier: 8.0,
+    monsters:    ["rana_venenosa", "hidra_pantano", "bruja_cienaga"],
+    boss:        "antiguo_pantano",
   },
   {
     id:          "snowy_mountain",
@@ -54,177 +69,176 @@ export const ZONES = [
     color:       "#4a6a8a",
     colorDark:   "#2a3d50",
     minLevel:    20,
+    xpMultiplier: 16.0,
     monsters:    ["yeti_joven", "aguila_glacial", "titan_escarcha"],
+    boss:        "dios_escarcha",
   },
 ];
 
-// ─── Monstruos normales ───────────────────────────────────────────────────────
+// ─── Monstruos comunes (sin límite de derrotas por día) ───────────────────────
 export const MONSTERS = {
-  // Bosque Oscuro
-  slime_verde: {
-    id: "slime_verde", name: "Slime Verde", emoji: "🟢",
-    zone: "dark_forest", tier: "común",
-    hp: 50, exercise: "pushups", reps: 10, timer: 60,
-    xp: 80, statReward: { STR: 1 },
-    description: "Una masa gelatinosa inofensiva. Perfecto para entrenar.",
-  },
-  lobo_sombra: {
-    id: "lobo_sombra", name: "Lobo Sombra", emoji: "🐺",
-    zone: "dark_forest", tier: "común",
-    hp: 100, exercise: "squats", reps: 20, timer: 75,
-    xp: 120, statReward: { AGI: 1 },
-    description: "Rápido y sigiloso. Sus zarpas cortan como cuchillos.",
-  },
-  treant_podrido: {
-    id: "treant_podrido", name: "Treant Podrido", emoji: "🌳",
-    zone: "dark_forest", tier: "élite",
-    hp: 200, exercise: "situps", reps: 35, timer: 90,
-    xp: 220, statReward: { END: 2 },
-    description: "Un árbol ancestral corrompido. Su resistencia es legendaria.",
-  },
+  // Bosque Oscuro — base XP ~80-220
+  slime_verde:      { id:"slime_verde",      name:"Slime Verde",        emoji:"🟢", zone:"dark_forest",     tier:"común",  hp:50,  exercise:"pushups", reps:10, timer:60,  xp:80,  statReward:{ STR:1 },         description:"Una masa gelatinosa inofensiva. Perfecto para entrenar." },
+  lobo_sombra:      { id:"lobo_sombra",      name:"Lobo Sombra",        emoji:"🐺", zone:"dark_forest",     tier:"común",  hp:100, exercise:"squats",  reps:20, timer:75,  xp:120, statReward:{ AGI:1 },         description:"Rápido y sigiloso. Sus zarpas cortan como cuchillos." },
+  treant_podrido:   { id:"treant_podrido",   name:"Treant Podrido",     emoji:"🌳", zone:"dark_forest",     tier:"común",  hp:150, exercise:"situps",  reps:30, timer:90,  xp:180, statReward:{ END:1 },         description:"Un árbol ancestral corrompido. Su resistencia es legendaria." },
 
-  // Cueva de Cristal
-  goblin_minero: {
-    id: "goblin_minero", name: "Goblin Minero", emoji: "⛏️",
-    zone: "crystal_cave", tier: "común",
-    hp: 80, exercise: "pushups", reps: 18, timer: 70,
-    xp: 110, statReward: { STR: 1 },
-    description: "Pequeño pero tenaz. Usa su pico con sorprendente fuerza.",
-  },
-  elemental_cristal: {
-    id: "elemental_cristal", name: "Elemental de Cristal", emoji: "🔷",
-    zone: "crystal_cave", tier: "común",
-    hp: 150, exercise: "squats", reps: 28, timer: 80,
-    xp: 180, statReward: { AGI: 1, VIT: 1 },
-    description: "Una entidad de pura energía cristalizada. Sus golpes perforan armaduras.",
-  },
-  golem_roca: {
-    id: "golem_roca", name: "Gólem de Roca", emoji: "🗿",
-    zone: "crystal_cave", tier: "élite",
-    hp: 300, exercise: "situps", reps: 45, timer: 100,
-    xp: 300, statReward: { END: 2, VIT: 1 },
-    description: "Una montaña con vida. Derrotarlo es una hazaña que pocos logran.",
-  },
+  // Cueva de Cristal — XP x2
+  goblin_minero:    { id:"goblin_minero",    name:"Goblin Minero",      emoji:"⛏️", zone:"crystal_cave",    tier:"común",  hp:80,  exercise:"pushups", reps:18, timer:70,  xp:180, statReward:{ STR:1 },         description:"Pequeño pero tenaz. Usa su pico con sorprendente fuerza." },
+  elemental_cristal:{ id:"elemental_cristal",name:"Elemental Cristal",  emoji:"🔷", zone:"crystal_cave",    tier:"común",  hp:150, exercise:"squats",  reps:28, timer:80,  xp:240, statReward:{ AGI:1, VIT:1 },  description:"Una entidad de pura energía cristalizada." },
+  golem_roca:       { id:"golem_roca",       name:"Gólem de Roca",      emoji:"🗿", zone:"crystal_cave",    tier:"común",  hp:220, exercise:"situps",  reps:40, timer:100, xp:320, statReward:{ END:1, VIT:1 },  description:"Una montaña con vida. Derrotarlo es una hazaña." },
 
-  // Fortaleza en Ruinas
-  esqueleto_guardia: {
-    id: "esqueleto_guardia", name: "Esqueleto Guardia", emoji: "💀",
-    zone: "ruined_fortress", tier: "común",
-    hp: 120, exercise: "pushups", reps: 25, timer: 75,
-    xp: 160, statReward: { STR: 2 },
-    description: "Un guerrero caído que sigue cumpliendo su deber por toda la eternidad.",
-  },
-  caballero_espectral: {
-    id: "caballero_espectral", name: "Caballero Espectral", emoji: "👻",
-    zone: "ruined_fortress", tier: "élite",
-    hp: 250, exercise: "squats", reps: 40, timer: 90,
-    xp: 280, statReward: { AGI: 2, STR: 1 },
-    description: "Un caballero de otra era. Su espada fantasmal ignora el dolor.",
-  },
-  arcanista_maldito: {
-    id: "arcanista_maldito", name: "Arcanista Maldito", emoji: "🧙‍♂️",
-    zone: "ruined_fortress", tier: "jefe",
-    hp: 400, exercise: "situps", reps: 60, timer: 120,
-    xp: 450, statReward: { END: 3, STR: 1 },
-    description: "Un mago corrompido por poder oscuro. Solo los más fuertes sobreviven.",
-  },
+  // Fortaleza — XP x4
+  esqueleto_guardia:{ id:"esqueleto_guardia",name:"Esqueleto Guardia",  emoji:"💀", zone:"ruined_fortress", tier:"común",  hp:120, exercise:"pushups", reps:25, timer:75,  xp:400, statReward:{ STR:2 },         description:"Un guerrero caído que sigue cumpliendo su deber eterno." },
+  caballero_espectral:{ id:"caballero_espectral",name:"Caballero Espectral",emoji:"👻",zone:"ruined_fortress",tier:"común",hp:200,exercise:"squats",  reps:38, timer:90,  xp:520, statReward:{ AGI:2, STR:1 }, description:"Un caballero de otra era. Su espada fantasmal ignora el dolor." },
+  arcanista_maldito:{ id:"arcanista_maldito",name:"Arcanista Maldito",  emoji:"🧙‍♂️",zone:"ruined_fortress",tier:"común",  hp:280, exercise:"situps",  reps:50, timer:110, xp:680, statReward:{ END:2, STR:1 }, description:"Un mago corrompido por poder oscuro." },
 
-  // Pantano Mágico
-  rana_venenosa: {
-    id: "rana_venenosa", name: "Rana Venenosa", emoji: "🐸",
-    zone: "magic_swamp", tier: "común",
-    hp: 140, exercise: "squats", reps: 30, timer: 80,
-    xp: 190, statReward: { AGI: 2 },
-    description: "Su veneno paraliza en segundos. Más rápida de lo que parece.",
-  },
-  hidra_pantano: {
-    id: "hidra_pantano", name: "Hidra del Pantano", emoji: "🐍",
-    zone: "magic_swamp", tier: "élite",
-    hp: 350, exercise: "pushups", reps: 50, timer: 110,
-    xp: 380, statReward: { STR: 2, VIT: 1 },
-    description: "Tres cabezas, tres veces el peligro. Corta una y crecen dos.",
-  },
-  bruja_ciénaga: {
-    id: "bruja_ciénaga", name: "Bruja de la Ciénaga", emoji: "🧟‍♀️",
-    zone: "magic_swamp", tier: "jefe",
-    hp: 500, exercise: "situps", reps: 70, timer: 130,
-    xp: 550, statReward: { END: 3, VIT: 2 },
-    description: "Domina las artes del pantano. Su maldición dura generaciones.",
-  },
+  // Pantano — XP x8
+  rana_venenosa:    { id:"rana_venenosa",    name:"Rana Venenosa",      emoji:"🐸", zone:"magic_swamp",     tier:"común",  hp:140, exercise:"squats",  reps:30, timer:80,  xp:800,  statReward:{ AGI:2 },         description:"Su veneno paraliza en segundos. Más rápida de lo que parece." },
+  hidra_pantano:    { id:"hidra_pantano",    name:"Hidra del Pantano",  emoji:"🐍", zone:"magic_swamp",     tier:"común",  hp:240, exercise:"pushups", reps:45, timer:100, xp:1100, statReward:{ STR:2, VIT:1 }, description:"Tres cabezas, tres veces el peligro." },
+  bruja_cienaga:    { id:"bruja_cienaga",    name:"Bruja de la Ciénaga",emoji:"🧟‍♀️",zone:"magic_swamp",    tier:"común",  hp:300, exercise:"situps",  reps:55, timer:120, xp:1400, statReward:{ END:2, VIT:1 }, description:"Domina las artes del pantano. Su maldición dura generaciones." },
 
-  // Montaña Nevada
-  yeti_joven: {
-    id: "yeti_joven", name: "Yeti Joven", emoji: "🦍",
-    zone: "snowy_mountain", tier: "común",
-    hp: 180, exercise: "pushups", reps: 35, timer: 85,
-    xp: 230, statReward: { STR: 2, VIT: 1 },
-    description: "Joven pero feroz. Su fuerza bruta puede romper rocas con facilidad.",
+  // Montaña — XP x16
+  yeti_joven:       { id:"yeti_joven",       name:"Yeti Joven",         emoji:"🦍", zone:"snowy_mountain",  tier:"común",  hp:180, exercise:"pushups", reps:35, timer:85,  xp:1800, statReward:{ STR:2, VIT:1 }, description:"Joven pero feroz. Su fuerza bruta puede romper rocas." },
+  aguila_glacial:   { id:"aguila_glacial",   name:"Águila Glacial",     emoji:"🦅", zone:"snowy_mountain",  tier:"común",  hp:260, exercise:"squats",  reps:48, timer:100, xp:2400, statReward:{ AGI:3, END:1 }, description:"Sus alas congelan el aire. Vuela tan alto que nadie puede seguirla." },
+  titan_escarcha:   { id:"titan_escarcha",   name:"Titán de Escarcha",  emoji:"🧊", zone:"snowy_mountain",  tier:"común",  hp:380, exercise:"situps",  reps:65, timer:130, xp:3200, statReward:{ END:3, STR:2 }, description:"El guardián de las cumbres." },
+};
+
+// ─── Jefes (1 por zona, 1 derrota por día, combate secuencial 3 ejercicios) ──
+export const BOSSES = {
+  guardian_bosque: {
+    id:"guardian_bosque", name:"Guardián del Bosque", emoji:"🌑",
+    zone:"dark_forest", tier:"jefe",
+    xp: 800,
+    statReward: { STR:2, AGI:2, END:2, VIT:1 },
+    description: "El espíritu protector del bosque corrompido. Requiere dominar los 3 pilares del entrenamiento.",
+    phases: [
+      { exercise:"pushups", reps:20, timer:90,  label:"Fase I  — Fuerza" },
+      { exercise:"squats",  reps:20, timer:90,  label:"Fase II — Agilidad" },
+      { exercise:"situps",  reps:20, timer:90,  label:"Fase III — Resistencia" },
+    ],
   },
-  aguila_glacial: {
-    id: "aguila_glacial", name: "Águila Glacial", emoji: "🦅",
-    zone: "snowy_mountain", tier: "élite",
-    hp: 280, exercise: "squats", reps: 48, timer: 100,
-    xp: 350, statReward: { AGI: 3, END: 1 },
-    description: "Sus alas congelan el aire. Vuela tan alto que nadie puede seguirla.",
+  rey_cristal: {
+    id:"rey_cristal", name:"Rey de Cristal", emoji:"💠",
+    zone:"crystal_cave", tier:"jefe",
+    xp: 1800,
+    statReward: { STR:3, AGI:3, END:2, VIT:2 },
+    description: "Un ser de cristal puro. Su poder se divide en tres fases devastadoras.",
+    phases: [
+      { exercise:"pushups", reps:28, timer:100, label:"Fase I  — Golpe Cristalino" },
+      { exercise:"squats",  reps:28, timer:100, label:"Fase II — Tormenta de Cristal" },
+      { exercise:"situps",  reps:28, timer:100, label:"Fase III — Barrera Final" },
+    ],
   },
-  titan_escarcha: {
-    id: "titan_escarcha", name: "Titán de Escarcha", emoji: "🧊",
-    zone: "snowy_mountain", tier: "jefe",
-    hp: 600, exercise: "situps", reps: 80, timer: 150,
-    xp: 700, statReward: { END: 3, STR: 2, VIT: 2 },
-    description: "El guardián de las cumbres. Derrotarlo es la mayor hazaña del mundo.",
+  senor_oscuro: {
+    id:"senor_oscuro", name:"Señor Oscuro", emoji:"👁️",
+    zone:"ruined_fortress", tier:"jefe",
+    xp: 4000,
+    statReward: { STR:4, AGI:3, END:4, VIT:2 },
+    description: "El comandante de la fortaleza caída. Solo los más fuertes pueden enfrentarlo.",
+    phases: [
+      { exercise:"pushups", reps:40, timer:110, label:"Fase I  — Puño de Sombra" },
+      { exercise:"squats",  reps:40, timer:110, label:"Fase II — Torbellino Oscuro" },
+      { exercise:"situps",  reps:40, timer:110, label:"Fase III — Voluntad Inquebrantable" },
+    ],
+  },
+  antiguo_pantano: {
+    id:"antiguo_pantano", name:"Antiguo del Pantano", emoji:"🐊",
+    zone:"magic_swamp", tier:"jefe",
+    xp: 9000,
+    statReward: { STR:4, AGI:4, END:5, VIT:3 },
+    description: "Una entidad primordial que duerme en las profundidades. Despertarlo es un error.",
+    phases: [
+      { exercise:"pushups", reps:55, timer:120, label:"Fase I  — Fauces del Pantano" },
+      { exercise:"squats",  reps:55, timer:120, label:"Fase II — Cola Devastadora" },
+      { exercise:"situps",  reps:55, timer:120, label:"Fase III — Maldición Eterna" },
+    ],
+  },
+  dios_escarcha: {
+    id:"dios_escarcha", name:"Dios de Escarcha", emoji:"❄️",
+    zone:"snowy_mountain", tier:"jefe",
+    xp: 20000,
+    statReward: { STR:5, AGI:5, END:6, VIT:4 },
+    description: "La deidad de las cumbres heladas. Derrotarlo es la hazaña máxima de Athral.",
+    phases: [
+      { exercise:"pushups", reps:70, timer:140, label:"Fase I  — Tormenta Ártica" },
+      { exercise:"squats",  reps:70, timer:140, label:"Fase II — Avalancha Divina" },
+      { exercise:"situps",  reps:70, timer:140, label:"Fase III — Voluntad del Invierno Eterno" },
+    ],
   },
 };
 
 // ─── Torre de Babel ───────────────────────────────────────────────────────────
-// Los pisos se generan dinámicamente escalando con el piso actual
-
 export const TOWER = {
   id:          "tower_of_babel",
   name:        "Torre de Babel",
   emoji:       "🗼",
-  description: "Una torre infinita donde cada piso es más peligroso que el anterior. Entra una vez al día. Si caes, lo pierdes todo.",
+  description: "Una torre infinita. Cada 5 pisos un jefe te aguarda. Si caes, lo pierdes todo.",
   color:       "#8a4abf",
   colorDark:   "#4a2a70",
   minLevel:    TOWER_MIN_LEVEL,
 };
 
-// Genera el monstruo de un piso específico de la Torre
+// Genera monstruo normal de la torre
 export function getTowerFloorMonster(floor) {
-  const exercises = ["pushups", "squats", "situps"];
-  const exercise  = exercises[(floor - 1) % 3];
+  const exercises  = ["pushups", "squats", "situps"];
+  const exercise   = exercises[(floor - 1) % 3];
+  const emojis     = ["👹","🔥","💀","⚡","🌑","🩸","👁️","🌪️","☠️","🐉"];
+  const emoji      = emojis[(floor - 1) % emojis.length];
+  const names      = ["Centinela","Destructor","Sombra","Devorador","Coloso","Espectro","Abominación","Demonio","Ángel Caído","Dios Oscuro"];
+  const name       = `${names[(floor - 1) % names.length]} del Piso ${floor}`;
 
-  const emojis = ["👹","🔥","💀","⚡","🌑","🩸","👁️","🌪️","☠️","🐉"];
-  const emoji  = emojis[(floor - 1) % emojis.length];
-
-  const names = [
-    "Centinela", "Destructor", "Sombra", "Devorador",
-    "Coloso", "Espectro", "Abominación", "Demonio", "Ángel Caído", "Dios Oscuro",
-  ];
-  const name = `${names[(floor - 1) % names.length]} del Piso ${floor}`;
-
-  // Escala progresiva
-  const hp      = Math.floor(50  + floor * 40  + Math.pow(floor, 1.4) * 5);
-  const reps    = Math.floor(8   + floor * 3   + Math.floor(floor / 5));
-  const timer   = Math.min(60   + floor * 8,  240); // máx 4 min
-  const xp      = Math.floor(100 + floor * 60 + Math.pow(floor, 1.5) * 10);
-
-  // Stats reward escala cada 5 pisos
-  const statBonus = Math.floor(floor / 5) + 1;
-  const statMap   = { pushups: "STR", squats: "AGI", situps: "END" };
+  // Escala agresiva — se duplica cada 5 pisos
+  const tierScale  = Math.pow(2, Math.floor((floor - 1) / 5));
+  const reps       = Math.floor((8 + floor * 2) * Math.sqrt(tierScale));
+  const timer      = Math.min(60 + floor * 5, 240);
+  const xp         = Math.floor(150 * floor * tierScale);
+  const statBonus  = Math.floor(floor / 5) + 1;
+  const statMap    = { pushups:"STR", squats:"AGI", situps:"END" };
 
   return {
     id:          `tower_floor_${floor}`,
     name,
     emoji,
     floor,
-    hp,
+    hp:          Math.floor(50 + floor * 30 * tierScale),
     exercise,
-    reps,
+    reps:        Math.max(5, reps),
     timer,
     xp,
     tier:        floor >= 20 ? "legendario" : floor >= 10 ? "jefe" : floor >= 5 ? "élite" : "común",
-    statReward:  { [statMap[exercise]]: statBonus, VIT: Math.floor(statBonus / 2) },
-    description: `Piso ${floor} de la Torre de Babel. Poder: ${Math.floor(hp / 10)}.`,
+    statReward:  { [statMap[exercise]]: statBonus, VIT: Math.max(1, Math.floor(statBonus / 2)) },
+    description: `Piso ${floor} — Poder: ${Math.floor(xp / 100)}`,
+    isBoss:      false,
   };
+}
+
+// Genera jefe de la torre (cada 5 pisos)
+export function getTowerBossMonster(floor) {
+  const tierScale  = Math.pow(2, Math.floor((floor - 1) / 5));
+  const bossEmojis = ["👑","💀","🔥","🌑","⚡","🐉","👁️","☠️","🌪️","🩸"];
+  const emoji      = bossEmojis[Math.floor(floor / 5) % bossEmojis.length];
+  const xp         = Math.floor(500 * floor * tierScale);
+  const reps       = Math.floor((12 + floor * 2) * Math.sqrt(tierScale));
+
+  return {
+    id:          `tower_boss_${floor}`,
+    name:        `Coloso del Piso ${floor}`,
+    emoji,
+    floor,
+    xp,
+    tier:        "jefe",
+    statReward:  { STR:2, AGI:2, END:2, VIT:2 },
+    description: `Jefe del piso ${floor}. Derrótalo para seguir subiendo.`,
+    isBoss:      true,
+    phases: [
+      { exercise:"pushups", reps: Math.max(8, reps),  timer: Math.min(60 + floor * 6, 240), label:`Fase I  — Fuerza del Piso ${floor}` },
+      { exercise:"squats",  reps: Math.max(8, reps),  timer: Math.min(60 + floor * 6, 240), label:`Fase II — Velocidad del Piso ${floor}` },
+      { exercise:"situps",  reps: Math.max(8, reps),  timer: Math.min(60 + floor * 6, 240), label:`Fase III — Resistencia del Piso ${floor}` },
+    ],
+  };
+}
+
+// Retorna true si el piso es un piso de jefe
+export function isTowerBossFloor(floor) {
+  return floor % 5 === 0;
 }
