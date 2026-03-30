@@ -1,372 +1,564 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, Animated, Dimensions,
+  Animated, Dimensions, FlatList, Image,
+  SafeAreaView,
 } from "react-native";
 import { auth } from "../firebase/config";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { CLASSES, FOCUSES, AVATARS } from "../constants/classes";
 
-const { width: W } = Dimensions.get("window");
+const { width: W, height: H } = Dimensions.get("window");
+const CARD_W = W * 0.82;
+const CARD_H = H * 0.78;
 
-const C = {
-  bg:      "#0a0a0f",
-  surface: "#12121a",
-  surface2:"#1a1a28",
-  border:  "#2a2a3d",
-  accent:  "#e8c84a",
-  text:    "#e8e0f0",
-  textDim: "#6a6080",
-  success: "#55c080",
-};
+// ─── Clases ───────────────────────────────────────────────────────────────────
+const CLASSES = [
+  {
+    id: "knight",
+    name: "Caballero",
+    tier: "DEFENSOR",
+    color: "#7a7aaa",
+    colorDark: "#0a0a18",
+    artM: require("../assets/classes/knight_m.png"),
+    artF: require("../assets/classes/knight_f.png"),
+    spriteM: require("../assets/classes/knight_m_sprite.png"),
+    spriteF: require("../assets/classes/knight_f_sprite.png"),
+    lore: '"El honor es mi armadura, la justicia mi espada. Ningún mal pasará mientras yo esté en pie."',
+    stats: [
+      { label: "STR", val: "+5", color: "#e05555" },
+      { label: "VIT", val: "+5", color: "#e055aa" },
+      { label: "END", val: "+3", color: "#5599e0" },
+      { label: "AGI", val: "+2", color: "#55c080" },
+    ],
+    ability: { title: "VOLUNTAD DE HIERRO", desc: "+30% VIT en combate · Inmune al primer golpe fatal" },
+    favExercise: "pushups",
+  },
+  {
+    id: "gladiator",
+    name: "Gladiador",
+    tier: "ATACANTE",
+    color: "#c03030",
+    colorDark: "#1a0808",
+    artM: require("../assets/classes/gladiator_m.png"),
+    artF: require("../assets/classes/gladiator_m.png"),
+    spriteM: require("../assets/classes/gladiator_m_sprite.png"),
+    spriteF: require("../assets/classes/gladiator_m_sprite.png"),
+    lore: '"La arena es mi templo. Cada combate, una oración de sangre y sudor a los dioses del poder."',
+    stats: [
+      { label: "STR", val: "+7", color: "#e05555" },
+      { label: "AGI", val: "+3", color: "#55c080" },
+      { label: "VIT", val: "+3", color: "#e055aa" },
+      { label: "END", val: "+2", color: "#5599e0" },
+    ],
+    ability: { title: "FURIA GLADIATORIA", desc: "+25% XP en combate · +50% daño con push-ups" },
+    favExercise: "pushups",
+  },
+  {
+    id: "barbarian",
+    name: "Bárbaro",
+    tier: "TANQUE",
+    color: "#c07030",
+    colorDark: "#1a0e04",
+    artM: require("../assets/classes/barbarian_m.png"),
+    artF: require("../assets/classes/barbarian_m.png"),
+    spriteM: require("../assets/classes/barbarian_m_sprite.png"),
+    spriteF: require("../assets/classes/barbarian_m_sprite.png"),
+    lore: '"La civilización es una jaula. La fuerza bruta es la única verdad que existe en este mundo."',
+    stats: [
+      { label: "STR", val: "+6", color: "#e05555" },
+      { label: "END", val: "+6", color: "#5599e0" },
+      { label: "AGI", val: "+2", color: "#55c080" },
+      { label: "VIT", val: "+1", color: "#e055aa" },
+    ],
+    ability: { title: "BERSERKER", desc: "+40% END · Reps ilimitados cuando la vida es baja" },
+    favExercise: "pushups",
+  },
+  {
+    id: "mage",
+    name: "Mago",
+    tier: "INTELIGENCIA",
+    color: "#8050c0",
+    colorDark: "#0e0818",
+    artM: require("../assets/classes/mage_m.png"),
+    artF: require("../assets/classes/mage_f.png"),
+    spriteM: require("../assets/classes/mage_m_sprite.png"),
+    spriteF: require("../assets/classes/mage_f_sprite.png"),
+    lore: '"El conocimiento es el poder más antiguo. Cada libro leído, un hechizo más en mi arsenal."',
+    stats: [
+      { label: "INT", val: "+8", color: "#a07de0" },
+      { label: "END", val: "+4", color: "#5599e0" },
+      { label: "AGI", val: "+2", color: "#55c080" },
+      { label: "STR", val: "+1", color: "#e05555" },
+    ],
+    ability: { title: "ARCANO SUPREMO", desc: "+2 INT por Pomodoro · Hechizos reducen reps en combate" },
+    favExercise: "situps",
+  },
+  {
+    id: "archer",
+    name: "Arquero",
+    tier: "VELOCIDAD",
+    color: "#308050",
+    colorDark: "#061008",
+    artM: require("../assets/classes/archer_m.png"),
+    artF: require("../assets/classes/archer_f.png"),
+    spriteM: require("../assets/classes/archer_m_sprite.png"),
+    spriteF: require("../assets/classes/archer_f_sprite.png"),
+    lore: '"La flecha no conoce el miedo. Veo, apunto, disparo. La distancia es mi aliada eterna."',
+    stats: [
+      { label: "AGI", val: "+8", color: "#55c080" },
+      { label: "STR", val: "+3", color: "#e05555" },
+      { label: "END", val: "+2", color: "#5599e0" },
+      { label: "VIT", val: "+2", color: "#e055aa" },
+    ],
+    ability: { title: "OJO DE AGUILA", desc: "-20% reps en squats · 2x AGI en combate de agilidad" },
+    favExercise: "squats",
+  },
+  {
+    id: "assassin",
+    name: "Asesino",
+    tier: "CRÍTICO",
+    color: "#304080",
+    colorDark: "#06080e",
+    artM: require("../assets/classes/assassin_m.png"),
+    artF: require("../assets/classes/assassin_f.png"),
+    spriteM: require("../assets/classes/assassin_m_sprite.png"),
+    spriteF: require("../assets/classes/assassin_f_sprite.png"),
+    lore: '"Las sombras son mi hogar. Llego antes de que sepas que estoy ahí. No hay segunda oportunidad."',
+    stats: [
+      { label: "AGI", val: "+6", color: "#55c080" },
+      { label: "STR", val: "+5", color: "#e05555" },
+      { label: "END", val: "+2", color: "#5599e0" },
+      { label: "VIT", val: "+2", color: "#e055aa" },
+    ],
+    ability: { title: "GOLPE LETAL", desc: "2x XP si quedan +30s · Primer ataque siempre crítico" },
+    favExercise: "squats",
+  },
+  {
+    id: "scientist",
+    name: "Científico",
+    tier: "INTELIGENCIA",
+    color: "#808020",
+    colorDark: "#101002",
+    artM: require("../assets/classes/scientist_m.png"),
+    artF: require("../assets/classes/scientist_m.png"),
+    spriteM: require("../assets/classes/scientist_m_sprite.png"),
+    spriteF: require("../assets/classes/scientist_m_sprite.png"),
+    lore: '"La mente es el músculo más poderoso. Cada Pomodoro completado, un paso más hacia la omnisciencia."',
+    stats: [
+      { label: "INT", val: "+10", color: "#a07de0" },
+      { label: "END", val: "+5", color: "#5599e0" },
+      { label: "AGI", val: "+3", color: "#55c080" },
+      { label: "STR", val: "+1", color: "#e05555" },
+    ],
+    ability: { title: "MENTE MAESTRA", desc: "+2 INT por Pomodoro · Analiza debilidades del enemigo" },
+    favExercise: "situps",
+  },
+];
 
-// ─── Step indicator ───────────────────────────────────────────────────────────
-function StepIndicator({ current, total }) {
+const FOCUSES = [
+  { id: "strength",  name: "Ganar fuerza",        desc: "Más push-ups en tus misiones",     color: "#e05555" },
+  { id: "cardio",    name: "Perder peso",          desc: "Circuitos de cardio y resistencia", color: "#e8a84a" },
+  { id: "agility",   name: "Mejorar agilidad",     desc: "Squats y velocidad",                color: "#55c080" },
+  { id: "balanced",  name: "Equilibrio general",   desc: "Todos los ejercicios por igual",    color: "#e8c84a" },
+  { id: "endurance", name: "Aumentar resistencia", desc: "Sit-ups y larga duración",          color: "#5599e0" },
+];
+
+// ─── Class Card ───────────────────────────────────────────────────────────────
+function ClassCard({ cls, gender, active }) {
+  const art    = gender === "m" ? cls.artM    : cls.artF;
+  const sprite = gender === "m" ? cls.spriteM : cls.spriteF;
+
   return (
-    <View style={styles.stepRow}>
-      {Array.from({ length: total }).map((_, i) => (
-        <View
-          key={i}
-          style={[
-            styles.stepDot,
-            i === current && styles.stepDotActive,
-            i < current  && styles.stepDotDone,
-          ]}
-        />
-      ))}
+    <View style={[styles.card, { borderColor: active ? cls.color : cls.color + "44", width: CARD_W, height: CARD_H }]}>
+      {/* Top bar */}
+      <View style={[styles.cardTopBar, { backgroundColor: cls.colorDark }]}>
+        <Text style={[styles.cardName, { color: cls.color }]}>{cls.name.toUpperCase()}</Text>
+        <View style={[styles.tierBadge, { borderColor: cls.color + "66", backgroundColor: cls.color + "22" }]}>
+          <Text style={[styles.tierText, { color: cls.color }]}>{cls.tier}</Text>
+        </View>
+      </View>
+
+      {/* Art area */}
+      <View style={[styles.cardArt, { backgroundColor: cls.colorDark }]}>
+        {/* Background radial */}
+        <View style={[styles.artGlow, { backgroundColor: cls.color + "18" }]} />
+
+        {/* Main character art */}
+        <Image source={art} style={styles.characterArt} resizeMode="contain" />
+
+        {/* Sprite box — bottom left */}
+        <View style={[styles.spriteBox, { borderColor: cls.color }]}>
+          <Image source={sprite} style={styles.spriteImage} resizeMode="contain" />
+          <View style={styles.spriteOverlay} />
+        </View>
+
+        {/* Stars — top right */}
+        <Text style={[styles.stars, { color: cls.color }]}>★★★</Text>
+      </View>
+
+      {/* Divider */}
+      <View style={[styles.cardDivider, { backgroundColor: cls.color + "44" }]} />
+
+      {/* Lore */}
+      <Text style={styles.cardLore} numberOfLines={2}>{cls.lore}</Text>
+
+      {/* Stats */}
+      <View style={styles.statsGrid}>
+        {cls.stats.map((s) => (
+          <View key={s.label} style={styles.statRow}>
+            <Text style={styles.statLabel}>{s.label}</Text>
+            <Text style={[styles.statVal, { color: s.color }]}>{s.val}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Ability */}
+      <View style={[styles.abilityBox, { borderLeftColor: cls.color, backgroundColor: cls.color + "11" }]}>
+        <Text style={[styles.abilityTitle, { color: cls.color }]}>{cls.ability.title}</Text>
+        <Text style={styles.abilityDesc}>{cls.ability.desc}</Text>
+      </View>
     </View>
   );
 }
 
-// ─── Character Creation Screen ────────────────────────────────────────────────
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function CharacterCreationScreen({ onFinish }) {
-  const [step, setStep]               = useState(0); // 0=clase 1=avatar 2=enfoque 3=confirmación
-  const [selectedClass, setSelectedClass]   = useState(null);
-  const [selectedAvatar, setSelectedAvatar] = useState("🧙");
-  const [selectedFocus, setSelectedFocus]   = useState(null);
-  const [saving, setSaving]                 = useState(false);
+  const [step, setStep]           = useState(0); // 0=clase 1=género 2=enfoque 3=confirm
+  const [selectedClass, setSelectedClass] = useState(0);
+  const [gender, setGender]       = useState("m");
+  const [selectedFocus, setSelectedFocus] = useState(null);
+  const [saving, setSaving]       = useState(false);
 
-  const slideAnim = useRef(new Animated.Value(0)).current;
+  const flatListRef = useRef(null);
+  const slideAnim   = useRef(new Animated.Value(0)).current;
 
-  function goNext() {
+  const cls = CLASSES[selectedClass];
+
+  function animateStep(nextStep) {
     Animated.sequence([
-      Animated.timing(slideAnim, { toValue: -20, duration: 150, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0,   duration: 200, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 30, duration: 120, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0,  duration: 200, useNativeDriver: true }),
     ]).start();
-    setStep(s => s + 1);
+    setStep(nextStep);
   }
 
-  function goBack() {
-    setStep(s => Math.max(0, s - 1));
-  }
+  const onViewableItemsChanged = useCallback(({ viewableItems }) => {
+    if (viewableItems.length > 0) {
+      setSelectedClass(viewableItems[0].index ?? 0);
+    }
+  }, []);
+
+  const viewabilityConfig = { itemVisiblePercentThreshold: 60 };
 
   async function handleFinish() {
-    if (!selectedClass || !selectedFocus) return;
     setSaving(true);
-
     const uid = auth.currentUser?.uid;
-    const cls = CLASSES.find(c => c.id === selectedClass);
-
-    // Aplicar bonus de stats iniciales de la clase
-    const initialStats = { STR: 0, AGI: 0, END: 0, VIT: 0 };
-    Object.entries(cls.statBonus).forEach(([stat, val]) => {
-      initialStats[stat] = val;
+    const initialStats = { STR: 0, AGI: 0, END: 0, VIT: 0, INT: 0 };
+    cls.stats.forEach(({ label, val }) => {
+      initialStats[label] = parseInt(val.replace("+", ""));
     });
-
     await updateDoc(doc(db, "users", uid), {
-      class:       selectedClass,
+      class:       cls.id,
+      className:   cls.name,
+      gender,
       focus:       selectedFocus,
-      avatar:      selectedAvatar,
       stats:       initialStats,
-      title:       cls.name,   // título inicial según clase
+      title:       cls.name,
     });
-
     setSaving(false);
     onFinish?.();
   }
 
-  const canProceed = [
-    !!selectedClass,
-    true, // avatar siempre tiene default
-    !!selectedFocus,
-    true,
-  ][step];
+  // ── STEP 0: Selector de clase ──────────────────────────────────────────────
+  if (step === 0) {
+    return (
+      <SafeAreaView style={styles.root}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>ELIGE TU CLASE</Text>
+          <Text style={styles.headerSub}>Desliza para explorar</Text>
+        </View>
 
-  const cls   = CLASSES.find(c => c.id === selectedClass);
+        {/* Dot indicators */}
+        <View style={styles.dotsRow}>
+          {CLASSES.map((_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.dot,
+                i === selectedClass && { width: 18, backgroundColor: cls.color },
+              ]}
+            />
+          ))}
+        </View>
+
+        {/* Card carousel */}
+        <FlatList
+          ref={flatListRef}
+          data={CLASSES}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          snapToInterval={CARD_W + 20}
+          decelerationRate="fast"
+          contentContainerStyle={styles.carouselContent}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          renderItem={({ item, index }) => (
+            <View style={styles.cardWrapper}>
+              <ClassCard cls={item} gender={gender} active={index === selectedClass} />
+            </View>
+          )}
+        />
+
+        {/* Gender toggle */}
+        <View style={styles.genderRow}>
+          <TouchableOpacity
+            style={[styles.genderBtn, gender === "m" && { backgroundColor: cls.color }]}
+            onPress={() => setGender("m")}
+          >
+            <Text style={[styles.genderBtnText, gender === "m" && { color: "#0a0a0f" }]}>♂ MASCULINO</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.genderBtn, gender === "f" && { backgroundColor: cls.color }]}
+            onPress={() => setGender("f")}
+          >
+            <Text style={[styles.genderBtnText, gender === "f" && { color: "#0a0a0f" }]}>♀ FEMENINO</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Next */}
+        <TouchableOpacity
+          style={[styles.nextBtn, { backgroundColor: cls.color }]}
+          onPress={() => animateStep(1)}
+        >
+          <Text style={styles.nextBtnText}>CONTINUAR →</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  // ── STEP 1: Enfoque ────────────────────────────────────────────────────────
+  if (step === 1) {
+    return (
+      <SafeAreaView style={styles.root}>
+        <TouchableOpacity onPress={() => animateStep(0)} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>← VOLVER</Text>
+        </TouchableOpacity>
+
+        {/* Character preview small */}
+        <View style={styles.previewRow}>
+          <Image
+            source={gender === "m" ? cls.artM : cls.artF}
+            style={styles.previewArt}
+            resizeMode="contain"
+          />
+          <View style={styles.previewInfo}>
+            <Text style={[styles.previewName, { color: cls.color }]}>{cls.name}</Text>
+            <Text style={styles.previewGender}>{gender === "m" ? "♂ Masculino" : "♀ Femenino"}</Text>
+          </View>
+        </View>
+
+        <Text style={styles.stepTitle}>TU ENFOQUE</Text>
+        <Text style={styles.stepSub}>¿Cuál es tu objetivo principal?</Text>
+
+        <Animated.ScrollView
+          style={{ transform: [{ translateY: slideAnim }] }}
+          contentContainerStyle={styles.focusList}
+          showsVerticalScrollIndicator={false}
+        >
+          {FOCUSES.map((f) => (
+            <TouchableOpacity
+              key={f.id}
+              style={[
+                styles.focusCard,
+                { borderColor: selectedFocus === f.id ? f.color : "#2a2a3d" },
+                selectedFocus === f.id && { backgroundColor: f.color + "11" },
+              ]}
+              onPress={() => setSelectedFocus(f.id)}
+            >
+              <View style={styles.focusInfo}>
+                <Text style={[styles.focusName, { color: selectedFocus === f.id ? f.color : "#e8e0f0" }]}>
+                  {f.name}
+                </Text>
+                <Text style={styles.focusDesc}>{f.desc}</Text>
+              </View>
+              {selectedFocus === f.id && (
+                <View style={[styles.focusCheck, { backgroundColor: f.color }]}>
+                  <Text style={styles.focusCheckText}>✓</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          ))}
+        </Animated.ScrollView>
+
+        <TouchableOpacity
+          style={[styles.nextBtn, { backgroundColor: cls.color, opacity: selectedFocus ? 1 : 0.35 }]}
+          onPress={() => selectedFocus && animateStep(2)}
+          disabled={!selectedFocus}
+        >
+          <Text style={styles.nextBtnText}>CONTINUAR →</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    );
+  }
+
+  // ── STEP 2: Confirmación ───────────────────────────────────────────────────
   const focus = FOCUSES.find(f => f.id === selectedFocus);
 
   return (
-    <View style={styles.root}>
-      {/* Header */}
-      <View style={styles.header}>
-        {step > 0 ? (
-          <TouchableOpacity onPress={goBack} style={styles.backBtn}>
-            <Text style={styles.backText}>← VOLVER</Text>
-          </TouchableOpacity>
-        ) : <View style={{ width: 80 }} />}
-        <StepIndicator current={step} total={4} />
-        <View style={{ width: 80 }} />
-      </View>
+    <SafeAreaView style={styles.root}>
+      <TouchableOpacity onPress={() => animateStep(1)} style={styles.backBtn}>
+        <Text style={styles.backBtnText}>← VOLVER</Text>
+      </TouchableOpacity>
 
-      <Animated.View style={[styles.content, { transform: [{ translateX: slideAnim }] }]}>
+      <Text style={styles.stepTitle}>TU PERSONAJE</Text>
+      <Text style={styles.stepSub}>Así comenzará tu aventura en Athral</Text>
 
-        {/* ── PASO 0: Elegir clase ── */}
-        {step === 0 && (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-            <Text style={styles.stepTitle}>Elige tu clase</Text>
-            <Text style={styles.stepSub}>Tu clase determina qué tipo de monstruos encontrarás con más frecuencia</Text>
-            <View style={styles.classGrid}>
-              {CLASSES.map(cls => (
-                <TouchableOpacity
-                  key={cls.id}
-                  style={[
-                    styles.classCard,
-                    { borderColor: selectedClass === cls.id ? cls.color : C.border },
-                    selectedClass === cls.id && { backgroundColor: cls.colorDark },
-                  ]}
-                  onPress={() => setSelectedClass(cls.id)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.classEmoji}>{cls.emoji}</Text>
-                  <Text style={[styles.className, { color: selectedClass === cls.id ? cls.color : C.text }]}>
-                    {cls.name}
-                  </Text>
-                  <Text style={styles.classDesc}>{cls.description}</Text>
+      {/* Big character preview */}
+      <View style={[styles.confirmCard, { borderColor: cls.color + "66" }]}>
+        <Image
+          source={gender === "m" ? cls.artM : cls.artF}
+          style={styles.confirmArt}
+          resizeMode="contain"
+        />
 
-                  {/* Stat bonus */}
-                  <View style={styles.classBonusRow}>
-                    {Object.entries(cls.statBonus).map(([stat, val]) => (
-                      <View key={stat} style={[styles.classBonusBadge, { borderColor: cls.color + "44" }]}>
-                        <Text style={[styles.classBonusText, { color: cls.color }]}>+{val} {stat}</Text>
-                      </View>
-                    ))}
-                  </View>
+        {/* Sprite small */}
+        <View style={[styles.confirmSpriteBox, { borderColor: cls.color }]}>
+          <Image
+            source={gender === "m" ? cls.spriteM : cls.spriteF}
+            style={styles.confirmSprite}
+            resizeMode="contain"
+          />
+        </View>
 
-                  <Text style={styles.classLore}>{cls.lore}</Text>
-
-                  {selectedClass === cls.id && (
-                    <View style={[styles.selectedCheck, { backgroundColor: cls.color }]}>
-                      <Text style={styles.selectedCheckText}>✓</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-        )}
-
-        {/* ── PASO 1: Elegir avatar ── */}
-        {step === 1 && (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-            <Text style={styles.stepTitle}>Elige tu avatar</Text>
-            <Text style={styles.stepSub}>La apariencia de tu personaje en el mundo de Athral</Text>
-
-            {/* Preview */}
-            <View style={[styles.avatarPreview, { borderColor: cls?.color ?? C.accent }]}>
-              <Text style={styles.avatarPreviewEmoji}>{selectedAvatar}</Text>
-              <Text style={[styles.avatarPreviewName, { color: cls?.color ?? C.accent }]}>
-                {cls?.name ?? "Aventurero"}
-              </Text>
-            </View>
-
-            <View style={styles.avatarGrid}>
-              {AVATARS.map((emoji) => (
-                <TouchableOpacity
-                  key={emoji}
-                  style={[
-                    styles.avatarChip,
-                    selectedAvatar === emoji && styles.avatarChipActive,
-                  ]}
-                  onPress={() => setSelectedAvatar(emoji)}
-                >
-                  <Text style={styles.avatarChipEmoji}>{emoji}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-        )}
-
-        {/* ── PASO 2: Elegir enfoque ── */}
-        {step === 2 && (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-            <Text style={styles.stepTitle}>Tu enfoque</Text>
-            <Text style={styles.stepSub}>¿Cuál es tu objetivo principal? Esto personaliza tus misiones</Text>
-            <View style={styles.focusList}>
-              {FOCUSES.map(f => (
-                <TouchableOpacity
-                  key={f.id}
-                  style={[
-                    styles.focusCard,
-                    { borderColor: selectedFocus === f.id ? f.color : C.border },
-                    selectedFocus === f.id && { backgroundColor: f.color + "11" },
-                  ]}
-                  onPress={() => setSelectedFocus(f.id)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.focusEmoji}>{f.emoji}</Text>
-                  <View style={styles.focusInfo}>
-                    <Text style={[styles.focusName, { color: selectedFocus === f.id ? f.color : C.text }]}>
-                      {f.name}
-                    </Text>
-                    <Text style={styles.focusDesc}>{f.description}</Text>
-                  </View>
-                  {selectedFocus === f.id && (
-                    <View style={[styles.focusCheck, { backgroundColor: f.color }]}>
-                      <Text style={styles.focusCheckText}>✓</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-        )}
-
-        {/* ── PASO 3: Confirmación ── */}
-        {step === 3 && (
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-            <Text style={styles.stepTitle}>Tu personaje</Text>
-            <Text style={styles.stepSub}>Así comenzará tu aventura en Athral World</Text>
-
-            {/* Character summary */}
-            <View style={[styles.summaryCard, { borderColor: cls?.color + "66" }]}>
-              {/* Avatar grande */}
-              <View style={[styles.summaryAvatar, { borderColor: cls?.color, backgroundColor: cls?.colorDark }]}>
-                <Text style={styles.summaryAvatarEmoji}>{selectedAvatar}</Text>
-              </View>
-
-              <Text style={[styles.summaryClass, { color: cls?.color }]}>
-                {cls?.emoji} {cls?.name}
-              </Text>
-
-              <View style={styles.summaryDivider} />
-
-              {/* Stats iniciales */}
-              <Text style={styles.summaryLabel}>STATS INICIALES</Text>
-              <View style={styles.summaryStats}>
-                {Object.entries(cls?.statBonus ?? {}).map(([stat, val]) => (
-                  <View key={stat} style={styles.summaryStatItem}>
-                    <Text style={styles.summaryStatVal}>+{val}</Text>
-                    <Text style={styles.summaryStatKey}>{stat}</Text>
-                  </View>
-                ))}
-              </View>
-
-              <View style={styles.summaryDivider} />
-
-              {/* Enfoque */}
-              <Text style={styles.summaryLabel}>ENFOQUE</Text>
-              <View style={[styles.summaryFocusRow, { borderColor: focus?.color + "44" }]}>
-                <Text style={styles.summaryFocusEmoji}>{focus?.emoji}</Text>
-                <View>
-                  <Text style={[styles.summaryFocusName, { color: focus?.color }]}>{focus?.name}</Text>
-                  <Text style={styles.summaryFocusDesc}>{focus?.description}</Text>
-                </View>
-              </View>
-
-              {/* Lore de la clase */}
-              <View style={styles.summaryDivider} />
-              <Text style={styles.summaryLore}>{cls?.lore}</Text>
-            </View>
-          </ScrollView>
-        )}
-      </Animated.View>
-
-      {/* Bottom button */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={[styles.nextBtn, !canProceed && styles.nextBtnDisabled]}
-          onPress={step === 3 ? handleFinish : goNext}
-          disabled={!canProceed || saving}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.nextBtnText}>
-            {saving          ? "CREANDO PERSONAJE..." :
-             step === 3      ? "✦  COMENZAR AVENTURA" :
-             step === 1      ? "CONTINUAR →"          :
-                               "CONTINUAR →"}
+        {/* Info overlay at bottom */}
+        <View style={[styles.confirmOverlay, { backgroundColor: cls.colorDark + "ee" }]}>
+          <Text style={[styles.confirmName, { color: cls.color }]}>
+            {cls.name.toUpperCase()} · {gender === "m" ? "♂" : "♀"}
           </Text>
-        </TouchableOpacity>
+          <Text style={styles.confirmFocus}>✦ {focus?.name}</Text>
+          <View style={styles.confirmStatsRow}>
+            {cls.stats.slice(0, 3).map(s => (
+              <Text key={s.label} style={[styles.confirmStat, { color: s.color }]}>
+                {s.label} {s.val}
+              </Text>
+            ))}
+          </View>
+        </View>
       </View>
-    </View>
+
+      <TouchableOpacity
+        style={[styles.nextBtn, { backgroundColor: cls.color }]}
+        onPress={handleFinish}
+        disabled={saving}
+      >
+        <Text style={styles.nextBtnText}>
+          {saving ? "CREANDO PERSONAJE..." : "✦  COMENZAR AVENTURA"}
+        </Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  root:    { flex:1, backgroundColor:C.bg },
-  content: { flex:1 },
-  scroll:  { paddingHorizontal:20, paddingTop:8, paddingBottom:20 },
+  root:    { flex:1, backgroundColor:"#0a0a0f" },
 
-  // Header
-  header:   { flexDirection:"row", alignItems:"center", justifyContent:"space-between", paddingHorizontal:20, paddingTop:56, paddingBottom:16 },
-  backBtn:  { paddingVertical:6, paddingHorizontal:12, borderWidth:1, borderColor:C.border, borderRadius:4 },
-  backText: { color:C.textDim, fontSize:11, fontWeight:"700", letterSpacing:1 },
+  header:     { paddingHorizontal:24, paddingTop:16, paddingBottom:8 },
+  headerTitle:{ color:"#e8c84a", fontSize:22, fontWeight:"900", letterSpacing:4 },
+  headerSub:  { color:"#6a6080", fontSize:12, letterSpacing:2, marginTop:2 },
 
-  // Steps
-  stepRow:      { flexDirection:"row", gap:8, alignItems:"center" },
-  stepDot:      { width:8, height:8, borderRadius:4, backgroundColor:C.border },
-  stepDotActive:{ width:24, backgroundColor:C.accent },
-  stepDotDone:  { backgroundColor:C.success },
+  dotsRow:    { flexDirection:"row", gap:6, paddingHorizontal:24, marginBottom:8 },
+  dot:        { width:6, height:6, borderRadius:3, backgroundColor:"#2a2a3d" },
 
-  // Step content
-  stepTitle: { color:C.accent, fontSize:26, fontWeight:"900", letterSpacing:1, marginBottom:8 },
-  stepSub:   { color:C.textDim, fontSize:14, lineHeight:20, marginBottom:24 },
+  carouselContent: { paddingHorizontal:(W - CARD_W) / 2 - 10 },
+  cardWrapper:     { width: CARD_W + 20, alignItems:"center", justifyContent:"center" },
 
-  // Classes
-  classGrid: { gap:12 },
-  classCard: {
-    backgroundColor:C.surface, borderWidth:1, borderRadius:8,
-    padding:16, gap:8, position:"relative",
+  // Card
+  card:         { borderWidth:2, borderRadius:12, overflow:"hidden", backgroundColor:"#0f0f1a" },
+  cardTopBar:   { flexDirection:"row", justifyContent:"space-between", alignItems:"center", padding:12 },
+  cardName:     { fontSize:16, fontWeight:"900", letterSpacing:2 },
+  tierBadge:    { borderWidth:1, borderRadius:3, paddingHorizontal:8, paddingVertical:3 },
+  tierText:     { fontSize:9, fontWeight:"900", letterSpacing:1 },
+
+  cardArt:      { height: CARD_H * 0.48, justifyContent:"center", alignItems:"center", position:"relative" },
+  artGlow:      { position:"absolute", inset:0, borderRadius:0 },
+  characterArt: { width:"100%", height:"100%", position:"absolute" },
+
+  spriteBox: {
+    position:"absolute", bottom:8, left:8,
+    width:40, height:50, borderWidth:2, borderRadius:3,
+    backgroundColor:"#0a0a0f", overflow:"hidden",
   },
-  classEmoji:      { fontSize:36 },
-  className:       { fontSize:18, fontWeight:"900" },
-  classDesc:       { color:C.textDim, fontSize:13, lineHeight:18 },
-  classBonusRow:   { flexDirection:"row", gap:6, flexWrap:"wrap" },
-  classBonusBadge: { borderWidth:1, borderRadius:4, paddingHorizontal:8, paddingVertical:3 },
-  classBonusText:  { fontSize:11, fontWeight:"700" },
-  classLore:       { color:C.textDim, fontSize:11, fontStyle:"italic", lineHeight:16 },
-  selectedCheck:   { position:"absolute", top:12, right:12, width:24, height:24, borderRadius:12, justifyContent:"center", alignItems:"center" },
-  selectedCheckText:{ color:C.bg, fontSize:13, fontWeight:"900" },
+  spriteImage:   { width:"100%", height:"100%" },
+  spriteOverlay: {
+    position:"absolute", inset:0,
+    backgroundColor:"transparent",
+  },
+  stars:         { position:"absolute", top:8, right:8, fontSize:12, fontWeight:"700" },
 
-  // Avatar
-  avatarPreview:     { alignItems:"center", backgroundColor:C.surface, borderWidth:2, borderRadius:12, padding:24, marginBottom:24, gap:8 },
-  avatarPreviewEmoji:{ fontSize:72 },
-  avatarPreviewName: { fontSize:18, fontWeight:"900", letterSpacing:2 },
-  avatarGrid:        { flexDirection:"row", flexWrap:"wrap", gap:10, justifyContent:"center" },
-  avatarChip:        { width:60, height:60, backgroundColor:C.surface, borderWidth:1, borderColor:C.border, borderRadius:8, justifyContent:"center", alignItems:"center" },
-  avatarChipActive:  { borderColor:C.accent, backgroundColor:C.accent+"22" },
-  avatarChipEmoji:   { fontSize:30 },
+  cardDivider:  { height:1, marginHorizontal:12 },
+  cardLore:     { fontSize:10, fontStyle:"italic", color:"#9a90b0", textAlign:"center", paddingHorizontal:14, paddingVertical:8, lineHeight:16 },
 
-  // Focus
-  focusList: { gap:10 },
-  focusCard: { backgroundColor:C.surface, borderWidth:1, borderRadius:8, padding:16, flexDirection:"row", alignItems:"center", gap:14, position:"relative" },
-  focusEmoji:{ fontSize:28, width:36 },
+  statsGrid: { flexDirection:"row", flexWrap:"wrap", gap:4, paddingHorizontal:12, marginBottom:6 },
+  statRow:   { flexDirection:"row", gap:4, backgroundColor:"#1a1a28", paddingHorizontal:8, paddingVertical:4, borderRadius:3, minWidth:"22%" },
+  statLabel: { color:"#6a6080", fontSize:8, fontWeight:"700", letterSpacing:1 },
+  statVal:   { fontSize:10, fontWeight:"900" },
+
+  abilityBox:   { marginHorizontal:12, marginBottom:12, padding:8, borderRadius:4, borderLeftWidth:3 },
+  abilityTitle: { fontSize:8, fontWeight:"900", letterSpacing:2, marginBottom:3 },
+  abilityDesc:  { fontSize:9, color:"#8a80a0", lineHeight:14 },
+
+  genderRow: { flexDirection:"row", gap:10, paddingHorizontal:24, marginTop:12, marginBottom:10 },
+  genderBtn: { flex:1, backgroundColor:"#1a1a28", borderWidth:1, borderColor:"#2a2a3d", borderRadius:6, paddingVertical:10, alignItems:"center" },
+  genderBtnText:{ color:"#6a6080", fontSize:12, fontWeight:"900", letterSpacing:1 },
+
+  nextBtn:     { marginHorizontal:24, marginBottom:24, paddingVertical:16, borderRadius:6, alignItems:"center" },
+  nextBtnText: { color:"#0a0a0f", fontSize:14, fontWeight:"900", letterSpacing:2 },
+
+  backBtn:     { paddingHorizontal:20, paddingTop:16, paddingBottom:8 },
+  backBtnText: { color:"#6a6080", fontSize:12, fontWeight:"700", letterSpacing:1 },
+
+  // Step 1
+  previewRow:    { flexDirection:"row", alignItems:"center", gap:16, paddingHorizontal:20, paddingBottom:12 },
+  previewArt:    { width:60, height:80 },
+  previewInfo:   { gap:4 },
+  previewName:   { fontSize:18, fontWeight:"900" },
+  previewGender: { color:"#6a6080", fontSize:12 },
+
+  stepTitle: { color:"#e8c84a", fontSize:20, fontWeight:"900", letterSpacing:3, paddingHorizontal:20, marginBottom:4 },
+  stepSub:   { color:"#6a6080", fontSize:12, paddingHorizontal:20, marginBottom:16 },
+
+  focusList: { paddingHorizontal:20, gap:10, paddingBottom:20 },
+  focusCard: { backgroundColor:"#12121a", borderWidth:1, borderRadius:6, padding:16, flexDirection:"row", alignItems:"center" },
   focusInfo: { flex:1 },
-  focusName: { fontSize:15, fontWeight:"900" },
-  focusDesc: { color:C.textDim, fontSize:12, marginTop:3 },
-  focusCheck:{ width:24, height:24, borderRadius:12, justifyContent:"center", alignItems:"center" },
-  focusCheckText:{ color:C.bg, fontSize:13, fontWeight:"900" },
+  focusName: { fontSize:14, fontWeight:"900" },
+  focusDesc: { color:"#6a6080", fontSize:11, marginTop:3 },
+  focusCheck:    { width:24, height:24, borderRadius:12, justifyContent:"center", alignItems:"center" },
+  focusCheckText:{ color:"#0a0a0f", fontSize:14, fontWeight:"900" },
 
-  // Summary
-  summaryCard:       { backgroundColor:C.surface, borderWidth:1, borderRadius:8, padding:20, alignItems:"center", gap:16 },
-  summaryAvatar:     { width:100, height:100, borderRadius:12, borderWidth:2, justifyContent:"center", alignItems:"center" },
-  summaryAvatarEmoji:{ fontSize:56 },
-  summaryClass:      { fontSize:20, fontWeight:"900", letterSpacing:2 },
-  summaryDivider:    { width:"100%", height:1, backgroundColor:C.border },
-  summaryLabel:      { color:C.textDim, fontSize:9, fontWeight:"700", letterSpacing:3, alignSelf:"flex-start" },
-  summaryStats:      { flexDirection:"row", gap:16, alignSelf:"flex-start" },
-  summaryStatItem:   { alignItems:"center", gap:2 },
-  summaryStatVal:    { color:C.accent, fontSize:20, fontWeight:"900" },
-  summaryStatKey:    { color:C.textDim, fontSize:10, fontWeight:"700", letterSpacing:1 },
-  summaryFocusRow:   { flexDirection:"row", alignItems:"center", gap:12, alignSelf:"flex-start", backgroundColor:C.surface2, borderWidth:1, borderRadius:6, padding:12, width:"100%" },
-  summaryFocusEmoji: { fontSize:24 },
-  summaryFocusName:  { fontSize:14, fontWeight:"900" },
-  summaryFocusDesc:  { color:C.textDim, fontSize:11, marginTop:2 },
-  summaryLore:       { color:C.textDim, fontSize:12, fontStyle:"italic", textAlign:"center", lineHeight:18 },
-
-  // Bottom
-  bottomBar:       { paddingHorizontal:20, paddingBottom:40, paddingTop:12, borderTopWidth:1, borderTopColor:C.border },
-  nextBtn:         { backgroundColor:C.accent, borderRadius:8, paddingVertical:16, alignItems:"center" },
-  nextBtnDisabled: { opacity:0.35 },
-  nextBtnText:     { color:C.bg, fontSize:14, fontWeight:"900", letterSpacing:2 },
+  // Step 2
+  confirmCard: {
+    flex:1, marginHorizontal:20, marginBottom:16,
+    borderWidth:2, borderRadius:8, overflow:"hidden",
+    position:"relative",
+  },
+  confirmArt:     { width:"100%", height:"100%", position:"absolute" },
+  confirmSpriteBox:{
+    position:"absolute", top:12, left:12,
+    width:44, height:56, borderWidth:2, borderRadius:4,
+    backgroundColor:"#0a0a0fee", overflow:"hidden",
+  },
+  confirmSprite:  { width:"100%", height:"100%" },
+  confirmOverlay: {
+    position:"absolute", bottom:0, left:0, right:0,
+    padding:16, gap:6,
+  },
+  confirmName:      { fontSize:18, fontWeight:"900", letterSpacing:2 },
+  confirmFocus:     { color:"#a07de0", fontSize:13 },
+  confirmStatsRow:  { flexDirection:"row", gap:12 },
+  confirmStat:      { fontSize:12, fontWeight:"700" },
 });
