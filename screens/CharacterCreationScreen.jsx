@@ -2,15 +2,18 @@ import { useState, useRef, useCallback } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity,
   Animated, Dimensions, FlatList, Image,
-  SafeAreaView,
+  Platform, StatusBar,
 } from "react-native";
+
+const SAFE_TOP    = Platform.OS === "android" ? (StatusBar.currentHeight ?? 24) : 44;
+const SAFE_BOTTOM = Platform.OS === "android" ? 16 : 34;
 import { auth } from "../firebase/config";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 
 const { width: W, height: H } = Dimensions.get("window");
-const CARD_W = W * 0.82;
-const CARD_H = H * 0.78;
+const CARD_W = W * 0.88;
+const CARD_H = H * 0.72;
 
 // ─── Clases ───────────────────────────────────────────────────────────────────
 const CLASSES = [
@@ -168,9 +171,11 @@ const FOCUSES = [
 function ClassCard({ cls, gender, active }) {
   const art    = gender === "m" ? cls.artM    : cls.artF;
   const sprite = gender === "m" ? cls.spriteM : cls.spriteF;
+  const ART_H  = CARD_H * 0.50;
 
   return (
     <View style={[styles.card, { borderColor: active ? cls.color : cls.color + "44", width: CARD_W, height: CARD_H }]}>
+
       {/* Top bar */}
       <View style={[styles.cardTopBar, { backgroundColor: cls.colorDark }]}>
         <Text style={[styles.cardName, { color: cls.color }]}>{cls.name.toUpperCase()}</Text>
@@ -179,44 +184,43 @@ function ClassCard({ cls, gender, active }) {
         </View>
       </View>
 
-      {/* Art area */}
-      <View style={[styles.cardArt, { backgroundColor: cls.colorDark }]}>
-        {/* Background radial */}
+      {/* Art area — fixed height */}
+      <View style={[styles.cardArt, { height: ART_H, backgroundColor: cls.colorDark }]}>
         <View style={[styles.artGlow, { backgroundColor: cls.color + "18" }]} />
-
-        {/* Main character art */}
         <Image source={art} style={styles.characterArt} resizeMode="contain" />
-
-        {/* Sprite box — bottom left */}
         <View style={[styles.spriteBox, { borderColor: cls.color }]}>
           <Image source={sprite} style={styles.spriteImage} resizeMode="contain" />
-          <View style={styles.spriteOverlay} />
         </View>
-
-        {/* Stars — top right */}
         <Text style={[styles.stars, { color: cls.color }]}>★★★</Text>
       </View>
 
       {/* Divider */}
       <View style={[styles.cardDivider, { backgroundColor: cls.color + "44" }]} />
 
-      {/* Lore */}
-      <Text style={styles.cardLore} numberOfLines={2}>{cls.lore}</Text>
+      {/* Bottom section fills remaining space */}
+      <View style={styles.cardBottom}>
 
-      {/* Stats */}
-      <View style={styles.statsGrid}>
-        {cls.stats.map((s) => (
-          <View key={s.label} style={styles.statRow}>
-            <Text style={styles.statLabel}>{s.label}</Text>
-            <Text style={[styles.statVal, { color: s.color }]}>{s.val}</Text>
-          </View>
-        ))}
-      </View>
+        {/* Lore */}
+        <View style={styles.loreContainer}>
+          <Text style={styles.cardLore}>{cls.lore}</Text>
+        </View>
 
-      {/* Ability */}
-      <View style={[styles.abilityBox, { borderLeftColor: cls.color, backgroundColor: cls.color + "11" }]}>
-        <Text style={[styles.abilityTitle, { color: cls.color }]}>{cls.ability.title}</Text>
-        <Text style={styles.abilityDesc}>{cls.ability.desc}</Text>
+        {/* Stats — 2x2 grid */}
+        <View style={styles.statsGrid}>
+          {cls.stats.map((s) => (
+            <View key={s.label} style={[styles.statRow, { borderColor: s.color + "33" }]}>
+              <Text style={[styles.statLabel, { color: s.color + "99" }]}>{s.label}</Text>
+              <Text style={[styles.statVal, { color: s.color }]}>{s.val}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Ability */}
+        <View style={[styles.abilityBox, { borderLeftColor: cls.color, backgroundColor: cls.color + "11" }]}>
+          <Text style={[styles.abilityTitle, { color: cls.color }]}>{cls.ability.title}</Text>
+          <Text style={styles.abilityDesc}>{cls.ability.desc}</Text>
+        </View>
+
       </View>
     </View>
   );
@@ -273,7 +277,7 @@ export default function CharacterCreationScreen({ onFinish }) {
   // ── STEP 0: Selector de clase ──────────────────────────────────────────────
   if (step === 0) {
     return (
-      <SafeAreaView style={styles.root}>
+      <View style={[styles.root, { paddingTop: SAFE_TOP, paddingBottom: SAFE_BOTTOM }]}>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>ELIGE TU CLASE</Text>
@@ -301,7 +305,7 @@ export default function CharacterCreationScreen({ onFinish }) {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          snapToInterval={CARD_W + 20}
+          snapToInterval={CARD_W + 12}
           decelerationRate="fast"
           contentContainerStyle={styles.carouselContent}
           onViewableItemsChanged={onViewableItemsChanged}
@@ -336,14 +340,14 @@ export default function CharacterCreationScreen({ onFinish }) {
         >
           <Text style={styles.nextBtnText}>CONTINUAR →</Text>
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // ── STEP 1: Enfoque ────────────────────────────────────────────────────────
   if (step === 1) {
     return (
-      <SafeAreaView style={styles.root}>
+      <View style={[styles.root, { paddingTop: SAFE_TOP, paddingBottom: SAFE_BOTTOM }]}>
         <TouchableOpacity onPress={() => animateStep(0)} style={styles.backBtn}>
           <Text style={styles.backBtnText}>← VOLVER</Text>
         </TouchableOpacity>
@@ -401,7 +405,7 @@ export default function CharacterCreationScreen({ onFinish }) {
         >
           <Text style={styles.nextBtnText}>CONTINUAR →</Text>
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -409,7 +413,7 @@ export default function CharacterCreationScreen({ onFinish }) {
   const focus = FOCUSES.find(f => f.id === selectedFocus);
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={[styles.root, { paddingTop: SAFE_TOP, paddingBottom: SAFE_BOTTOM }]}>
       <TouchableOpacity onPress={() => animateStep(1)} style={styles.backBtn}>
         <Text style={styles.backBtnText}>← VOLVER</Text>
       </TouchableOpacity>
@@ -459,7 +463,7 @@ export default function CharacterCreationScreen({ onFinish }) {
           {saving ? "CREANDO PERSONAJE..." : "✦  COMENZAR AVENTURA"}
         </Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -467,30 +471,30 @@ export default function CharacterCreationScreen({ onFinish }) {
 const styles = StyleSheet.create({
   root:    { flex:1, backgroundColor:"#0a0a0f" },
 
-  header:     { paddingHorizontal:24, paddingTop:16, paddingBottom:8 },
-  headerTitle:{ color:"#e8c84a", fontSize:22, fontWeight:"900", letterSpacing:4 },
-  headerSub:  { color:"#6a6080", fontSize:12, letterSpacing:2, marginTop:2 },
+  header:     { paddingHorizontal:24, paddingTop:6, paddingBottom:2 },
+  headerTitle:{ color:"#e8c84a", fontSize:18, fontWeight:"900", letterSpacing:4 },
+  headerSub:  { color:"#6a6080", fontSize:10, letterSpacing:2, marginTop:1 },
 
-  dotsRow:    { flexDirection:"row", gap:6, paddingHorizontal:24, marginBottom:8 },
+  dotsRow:    { flexDirection:"row", gap:6, paddingHorizontal:24, marginBottom:2 },
   dot:        { width:6, height:6, borderRadius:3, backgroundColor:"#2a2a3d" },
 
-  carouselContent: { paddingHorizontal:(W - CARD_W) / 2 - 10 },
-  cardWrapper:     { width: CARD_W + 20, alignItems:"center", justifyContent:"center" },
+  carouselContent: { paddingHorizontal:(W - CARD_W) / 2 - 6, paddingVertical:4 },
+  cardWrapper:     { width: CARD_W + 12, alignItems:"center", justifyContent:"center" },
 
   // Card
   card:         { borderWidth:2, borderRadius:12, overflow:"hidden", backgroundColor:"#0f0f1a" },
-  cardTopBar:   { flexDirection:"row", justifyContent:"space-between", alignItems:"center", padding:12 },
-  cardName:     { fontSize:16, fontWeight:"900", letterSpacing:2 },
+  cardTopBar:   { flexDirection:"row", justifyContent:"space-between", alignItems:"center", paddingHorizontal:12, paddingVertical:8 },
+  cardName:     { fontSize:18, fontWeight:"900", letterSpacing:2 },
   tierBadge:    { borderWidth:1, borderRadius:3, paddingHorizontal:8, paddingVertical:3 },
-  tierText:     { fontSize:9, fontWeight:"900", letterSpacing:1 },
+  tierText:     { fontSize:10, fontWeight:"900", letterSpacing:1 },
 
-  cardArt:      { height: CARD_H * 0.48, justifyContent:"center", alignItems:"center", position:"relative" },
+  cardArt:      { justifyContent:"center", alignItems:"center", position:"relative", overflow:"hidden" },
   artGlow:      { position:"absolute", inset:0, borderRadius:0 },
   characterArt: { width:"100%", height:"100%", position:"absolute" },
 
   spriteBox: {
-    position:"absolute", bottom:8, left:8,
-    width:40, height:50, borderWidth:2, borderRadius:3,
+    position:"absolute", bottom:10, left:10,
+    width:48, height:60, borderWidth:2, borderRadius:3,
     backgroundColor:"#0a0a0f", overflow:"hidden",
   },
   spriteImage:   { width:"100%", height:"100%" },
@@ -498,25 +502,33 @@ const styles = StyleSheet.create({
     position:"absolute", inset:0,
     backgroundColor:"transparent",
   },
-  stars:         { position:"absolute", top:8, right:8, fontSize:12, fontWeight:"700" },
+  stars:         { position:"absolute", top:10, right:10, fontSize:14, fontWeight:"700" },
 
-  cardDivider:  { height:1, marginHorizontal:12 },
-  cardLore:     { fontSize:10, fontStyle:"italic", color:"#9a90b0", textAlign:"center", paddingHorizontal:14, paddingVertical:8, lineHeight:16 },
+  cardDivider:   { height:1, marginHorizontal:0 },
 
-  statsGrid: { flexDirection:"row", flexWrap:"wrap", gap:4, paddingHorizontal:12, marginBottom:6 },
-  statRow:   { flexDirection:"row", gap:4, backgroundColor:"#1a1a28", paddingHorizontal:8, paddingVertical:4, borderRadius:3, minWidth:"22%" },
-  statLabel: { color:"#6a6080", fontSize:8, fontWeight:"700", letterSpacing:1 },
-  statVal:   { fontSize:10, fontWeight:"900" },
+  cardBottom:    { flex:1, paddingHorizontal:14, paddingTop:10, paddingBottom:10, justifyContent:"space-between" },
 
-  abilityBox:   { marginHorizontal:12, marginBottom:12, padding:8, borderRadius:4, borderLeftWidth:3 },
-  abilityTitle: { fontSize:8, fontWeight:"900", letterSpacing:2, marginBottom:3 },
-  abilityDesc:  { fontSize:9, color:"#8a80a0", lineHeight:14 },
+  loreContainer: { flex:1, justifyContent:"center" },
+  cardLore:      { fontSize:13, fontStyle:"italic", color:"#9a90b0", textAlign:"center", lineHeight:19 },
 
-  genderRow: { flexDirection:"row", gap:10, paddingHorizontal:24, marginTop:12, marginBottom:10 },
-  genderBtn: { flex:1, backgroundColor:"#1a1a28", borderWidth:1, borderColor:"#2a2a3d", borderRadius:6, paddingVertical:10, alignItems:"center" },
-  genderBtnText:{ color:"#6a6080", fontSize:12, fontWeight:"900", letterSpacing:1 },
+  statsGrid: { flexDirection:"row", flexWrap:"wrap", gap:6, marginVertical:10 },
+  statRow:   {
+    flexDirection:"row", alignItems:"center", justifyContent:"space-between",
+    gap:8, backgroundColor:"#1a1a28", paddingHorizontal:12, paddingVertical:9,
+    borderRadius:4, width:"47%", borderWidth:1,
+  },
+  statLabel: { fontSize:12, fontWeight:"900", letterSpacing:1 },
+  statVal:   { fontSize:16, fontWeight:"900" },
 
-  nextBtn:     { marginHorizontal:24, marginBottom:24, paddingVertical:16, borderRadius:6, alignItems:"center" },
+  abilityBox:   { padding:12, borderRadius:6, borderLeftWidth:4 },
+  abilityTitle: { fontSize:11, fontWeight:"900", letterSpacing:2, marginBottom:5 },
+  abilityDesc:  { fontSize:12, color:"#8a80a0", lineHeight:18 },
+
+  genderRow: { flexDirection:"row", gap:10, paddingHorizontal:24, marginTop:6, marginBottom:6 },
+  genderBtn: { flex:1, backgroundColor:"#1a1a28", borderWidth:1, borderColor:"#2a2a3d", borderRadius:6, paddingVertical:8, alignItems:"center" },
+  genderBtnText:{ color:"#6a6080", fontSize:11, fontWeight:"900", letterSpacing:1 },
+
+  nextBtn:     { marginHorizontal:24, marginBottom:8, paddingVertical:12, borderRadius:6, alignItems:"center" },
   nextBtnText: { color:"#0a0a0f", fontSize:14, fontWeight:"900", letterSpacing:2 },
 
   backBtn:     { paddingHorizontal:20, paddingTop:16, paddingBottom:8 },

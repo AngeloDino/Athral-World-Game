@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity,
   Animated, ScrollView, ActivityIndicator,
-  Dimensions,
+  Dimensions, Image,
 } from "react-native";
 import { auth } from "../firebase/config";
 import { listenToUserProfile } from "../firebase/firestore";
@@ -12,6 +12,23 @@ import { LevelUpOverlay, RankUpOverlay } from "../components/LevelUpOverlay";
 import { TutorialOverlay } from "../components/TutorialOverlay";
 
 const { width: W } = Dimensions.get("window");
+
+// Mapa de sprites por clase y género
+const SPRITES = {
+  knight:     { m: require("../assets/classes/knight_m_sprite.png"),     f: require("../assets/classes/knight_f_sprite.png") },
+  gladiator:  { m: require("../assets/classes/gladiator_m_sprite.png"),  f: require("../assets/classes/gladiator_m_sprite.png") },
+  barbarian:  { m: require("../assets/classes/barbarian_m_sprite.png"),  f: require("../assets/classes/barbarian_m_sprite.png") },
+  mage:       { m: require("../assets/classes/mage_m_sprite.png"),       f: require("../assets/classes/mage_f_sprite.png") },
+  archer:     { m: require("../assets/classes/archer_m_sprite.png"),     f: require("../assets/classes/archer_f_sprite.png") },
+  assassin:   { m: require("../assets/classes/assassin_m_sprite.png"),   f: require("../assets/classes/assassin_f_sprite.png") },
+  scientist:  { m: require("../assets/classes/scientist_m_sprite.png"),  f: require("../assets/classes/scientist_m_sprite.png") },
+};
+
+function getSprite(classId, gender) {
+  const cls = SPRITES[classId];
+  if (!cls) return null;
+  return gender === "f" ? cls.f : cls.m;
+}
 
 const C = {
   bg:           "#0a0a0f",
@@ -151,7 +168,15 @@ export default function MainMenuScreen({ navigation }) {
           {/* Avatar + nivel */}
           <View style={styles.avatarCol}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarEmoji}>{profile?.avatar ?? "🧙"}</Text>
+              {getSprite(profile?.class, profile?.gender) ? (
+                <Image
+                  source={getSprite(profile?.class, profile?.gender)}
+                  style={styles.avatarSprite}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Text style={styles.avatarEmoji}>🧙</Text>
+              )}
             </View>
             <View style={styles.levelBadge}>
               <Text style={styles.levelLV}>LV</Text>
@@ -271,7 +296,8 @@ const styles = StyleSheet.create({
     borderWidth:2, borderColor:C.primary, borderRadius:8,
     justifyContent:"center", alignItems:"center",
   },
-  avatarEmoji: { fontSize:42 },
+  avatarEmoji:  { fontSize:42 },
+  avatarSprite: { width:60, height:72, imageRendering:"pixelated" },
   levelBadge:  { backgroundColor:C.accent, paddingHorizontal:12, paddingVertical:3, borderRadius:4, alignItems:"center" },
   levelLV:     { color:C.bg, fontSize:8, fontWeight:"900", letterSpacing:1 },
   levelNum:    { color:C.bg, fontSize:18, fontWeight:"900", lineHeight:20 },

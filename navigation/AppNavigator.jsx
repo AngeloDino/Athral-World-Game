@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { View, ActivityIndicator, StyleSheet, Animated } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { onAuthChange } from "../firebase/auth";
@@ -66,6 +67,7 @@ export default function AppNavigator() {
   if (appState === "character")  return <CharacterCreationScreen onFinish={handleCharacterCreationFinish} />;
 
   return (
+    <SafeAreaProvider>
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
@@ -85,6 +87,7 @@ export default function AppNavigator() {
         )}
       </Stack.Navigator>
     </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 
