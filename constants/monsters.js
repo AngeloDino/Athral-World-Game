@@ -22,8 +22,10 @@ export const ZONES = [
     colorDark:   "#1a3318",
     minLevel:    1,
     xpMultiplier: 1.0,
-    monsters:    ["slime_verde", "lobo_sombra", "treant_podrido"],
-    boss:        "guardian_bosque",
+    monsters:    ["slime_rojo", "lobo_sombra", "goblin_verde"],
+    rareMonsters:["goblin_etereo"],
+    boss:        null, // próximamente
+    comingSoon:  false,
   },
   {
     id:          "crystal_cave",
@@ -36,6 +38,7 @@ export const ZONES = [
     xpMultiplier: 2.0,
     monsters:    ["goblin_minero", "elemental_cristal", "golem_roca"],
     boss:        "rey_cristal",
+    comingSoon:  true,
   },
   {
     id:          "ruined_fortress",
@@ -48,6 +51,7 @@ export const ZONES = [
     xpMultiplier: 4.0,
     monsters:    ["esqueleto_guardia", "caballero_espectral", "arcanista_maldito"],
     boss:        "senor_oscuro",
+    comingSoon:  true,
   },
   {
     id:          "magic_swamp",
@@ -60,6 +64,7 @@ export const ZONES = [
     xpMultiplier: 8.0,
     monsters:    ["rana_venenosa", "hidra_pantano", "bruja_cienaga"],
     boss:        "antiguo_pantano",
+    comingSoon:  true,
   },
   {
     id:          "snowy_mountain",
@@ -72,15 +77,46 @@ export const ZONES = [
     xpMultiplier: 16.0,
     monsters:    ["yeti_joven", "aguila_glacial", "titan_escarcha"],
     boss:        "dios_escarcha",
+    comingSoon:  true,
   },
 ];
 
 // ─── Monstruos comunes (sin límite de derrotas por día) ───────────────────────
 export const MONSTERS = {
-  // Bosque Oscuro — base XP ~80-220
-  slime_verde:      { id:"slime_verde",      name:"Slime Verde",        emoji:"🟢", zone:"dark_forest",     tier:"común",  hp:50,  exercise:"pushups", reps:10, timer:60,  xp:80,  statReward:{ STR:1 },         description:"Una masa gelatinosa inofensiva. Perfecto para entrenar." },
-  lobo_sombra:      { id:"lobo_sombra",      name:"Lobo Sombra",        emoji:"🐺", zone:"dark_forest",     tier:"común",  hp:100, exercise:"squats",  reps:20, timer:75,  xp:120, statReward:{ AGI:1 },         description:"Rápido y sigiloso. Sus zarpas cortan como cuchillos." },
-  treant_podrido:   { id:"treant_podrido",   name:"Treant Podrido",     emoji:"🌳", zone:"dark_forest",     tier:"común",  hp:150, exercise:"situps",  reps:30, timer:90,  xp:180, statReward:{ END:1 },         description:"Un árbol ancestral corrompido. Su resistencia es legendaria." },
+  // ─── Bosque Oscuro ────────────────────────────────────────────────────────
+  slime_rojo: {
+    id:"slime_rojo", name:"Slime Rojo", zone:"dark_forest",
+    tier:"común", exercise:"pushups", reps:12, timer:70, xp:90,
+    statReward:{ STR:1 },
+    description:"Una masa carmesí que absorbe todo a su paso. Su núcleo verde brilla con energía maligna.",
+    art:    require("../assets/monsters/dark_forest/slime.png"),
+    sprite: require("../assets/monsters/dark_forest/slime_sprite.png"),
+  },
+  lobo_sombra: {
+    id:"lobo_sombra", name:"Lobo Sombra", zone:"dark_forest",
+    tier:"común", exercise:"squats", reps:20, timer:80, xp:130,
+    statReward:{ AGI:1 },
+    description:"Una bestia encadenada y armada. Sus ojos rojos no conocen la piedad ni el cansancio.",
+    art:    require("../assets/monsters/dark_forest/wolf.png"),
+    sprite: require("../assets/monsters/dark_forest/wolf_sprite.png"),
+  },
+  goblin_verde: {
+    id:"goblin_verde", name:"Goblin Verde", zone:"dark_forest",
+    tier:"común", exercise:"situps", reps:18, timer:75, xp:110,
+    statReward:{ END:1 },
+    description:"Agresivo y ruidoso. Su hacha dentada ha derramado más sangre de la que parece capaz.",
+    art:    require("../assets/monsters/dark_forest/green_gob.png"),
+    sprite: require("../assets/monsters/dark_forest/green_gob_sprite.png"),
+  },
+  goblin_etereo: {
+    id:"goblin_etereo", name:"Goblin Etéreo", zone:"dark_forest",
+    tier:"élite", exercise:"pushups", reps:28, timer:90, xp:320,
+    spawnChance: 0.18,
+    statReward:{ STR:2, AGI:1 },
+    description:"Un goblin imbuido de energía de cristal. Rara vez se manifiesta en el Bosque... pero cuando aparece, es brutal.",
+    art:    require("../assets/monsters/dark_forest/blue_gob.png"),
+    sprite: require("../assets/monsters/dark_forest/blue_gob_sprite.png"),
+  },
 
   // Cueva de Cristal — XP x2
   goblin_minero:    { id:"goblin_minero",    name:"Goblin Minero",      emoji:"⛏️", zone:"crystal_cave",    tier:"común",  hp:80,  exercise:"pushups", reps:18, timer:70,  xp:180, statReward:{ STR:1 },         description:"Pequeño pero tenaz. Usa su pico con sorprendente fuerza." },

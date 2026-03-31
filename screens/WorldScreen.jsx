@@ -189,10 +189,19 @@ export default function WorldScreen({ navigation }) {
                 key={zone.id}
                 style={[
                   styles.zoneMarker,
-                  { left, top, borderColor: locked ? "#2a2a3d" : meta.color, backgroundColor: locked ? "#0a0a0f" : meta.bg, opacity: locked ? 0.4 : 1 }
+                  {
+                    left, top,
+                    borderColor: locked ? "#2a2a3d" : zone.comingSoon ? meta.color + "44" : meta.color,
+                    backgroundColor: locked ? "#0a0a0f" : meta.bg,
+                    opacity: locked ? 0.4 : zone.comingSoon ? 0.6 : 1,
+                  }
                 ]}
-                onPress={() => !locked && navigation.navigate("Zone", { zone, playerClass })}
-                activeOpacity={locked ? 1 : 0.8}
+                onPress={() => {
+                  if (locked) return;
+                  if (zone.comingSoon) return;
+                  navigation.navigate("Zone", { zone, playerClass });
+                }}
+                activeOpacity={(locked || zone.comingSoon) ? 1 : 0.8}
               >
                 <Text style={styles.zoneEmoji}>{meta.emoji}</Text>
                 {locked && (
@@ -229,26 +238,32 @@ export default function WorldScreen({ navigation }) {
               <TouchableOpacity
                 key={zone.id}
                 style={[styles.legendRow, { borderColor: locked ? "#2a2a3d" : meta.color + "66", opacity: locked ? 0.5 : 1 }]}
-                onPress={() => !locked && navigation.navigate("Zone", { zone, playerClass })}
-                activeOpacity={locked ? 1 : 0.8}
+                onPress={() => {
+                  if (locked) return;
+                  if (zone.comingSoon) return;
+                  navigation.navigate("Zone", { zone, playerClass });
+                }}
+                activeOpacity={(locked || zone.comingSoon) ? 1 : 0.8}
               >
                 <Text style={styles.legendEmoji}>{meta.emoji}</Text>
                 <View style={styles.legendInfo}>
                   <Text style={[styles.legendName, { color: locked ? "#6a6080" : meta.color }]}>{meta.label}</Text>
-                  <Text style={styles.legendSub}>x{zone.xpMultiplier} XP · Lv{meta.minLevel}+</Text>
+                  <Text style={styles.legendSub}>
+                {zone.comingSoon ? "🔒 Próximamente" : `x${zone.xpMultiplier} XP · Lv${meta.minLevel}+`}
+              </Text>
                 </View>
                 {locked ? <Text style={styles.legendLock}>🔒</Text> : <Text style={styles.legendArrow}>›</Text>}
               </TouchableOpacity>
             );
           })}
-          <TouchableOpacity style={[styles.legendRow, { borderColor:"#8a4abf66" }]} onPress={() => setTowerVisible(true)} activeOpacity={0.8}>
+          <View style={[styles.legendRow, { borderColor:"#8a4abf44", opacity:0.6 }]}>
             <Text style={styles.legendEmoji}>🗼</Text>
             <View style={styles.legendInfo}>
-              <Text style={[styles.legendName, { color:"#aa6adf" }]}>TORRE DE BABEL</Text>
-              <Text style={styles.legendSub}>Pisos infinitos · Récord: Piso {towerRecord}</Text>
+              <Text style={[styles.legendName, { color:"#8a4abf" }]}>TORRE DE BABEL</Text>
+              <Text style={styles.legendSub}>🔒 Próximamente</Text>
             </View>
-            <Text style={styles.legendArrow}>›</Text>
-          </TouchableOpacity>
+            <Text style={[styles.legendArrow, { color:"#4a3f8a" }]}>›</Text>
+          </View>
         </View>
 
         <View style={{ height: 40 }} />

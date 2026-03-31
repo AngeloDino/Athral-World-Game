@@ -16,12 +16,12 @@ const { width: W } = Dimensions.get("window");
 // Mapa de sprites por clase y género
 const SPRITES = {
   knight:     { m: require("../assets/classes/knight_m_sprite.png"),     f: require("../assets/classes/knight_f_sprite.png") },
-  gladiator:  { m: require("../assets/classes/gladiator_m_sprite.png"),  f: require("../assets/classes/gladiator_m_sprite.png") },
-  barbarian:  { m: require("../assets/classes/barbarian_m_sprite.png"),  f: require("../assets/classes/barbarian_m_sprite.png") },
+  gladiator:  { m: require("../assets/classes/gladiator_m_sprite.png"),  f: require("../assets/classes/gladiator_f_sprite.png") },
+  barbarian:  { m: require("../assets/classes/barbarian_m_sprite.png"),  f: require("../assets/classes/barbarian_f_sprite.png") },
   mage:       { m: require("../assets/classes/mage_m_sprite.png"),       f: require("../assets/classes/mage_f_sprite.png") },
   archer:     { m: require("../assets/classes/archer_m_sprite.png"),     f: require("../assets/classes/archer_f_sprite.png") },
   assassin:   { m: require("../assets/classes/assassin_m_sprite.png"),   f: require("../assets/classes/assassin_f_sprite.png") },
-  scientist:  { m: require("../assets/classes/scientist_m_sprite.png"),  f: require("../assets/classes/scientist_m_sprite.png") },
+  scientist:  { m: require("../assets/classes/scientist_m_sprite.png"),  f: require("../assets/classes/scientist_f_sprite.png") },
 };
 
 function getSprite(classId, gender) {
