@@ -435,7 +435,7 @@ export default function CombatScreen({ route, navigation }) {
       <SafeAreaView style={styles.root}>
         <View style={styles.topHeader}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backText}>← HUIR</Text>
+            <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: C.boss }]}>COMBATE DE JEFE</Text>
           <View style={{ width:60 }} />
@@ -456,7 +456,7 @@ export default function CombatScreen({ route, navigation }) {
       {/* Header */}
       <View style={styles.topHeader}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← SALIR</Text>
+          <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: config.color }]}>{config.title}</Text>
         <View style={{ width:60 }} />
@@ -574,10 +574,10 @@ const styles = StyleSheet.create({
   root:        { flex:1, backgroundColor:C.bg },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor:"#000000aa", justifyContent:"center", alignItems:"center" },
 
-  topHeader:   { flexDirection:"row", alignItems:"center", justifyContent:"space-between", paddingHorizontal:16, paddingTop:8, paddingBottom:8 },
-  backBtn:     { paddingVertical:6, paddingHorizontal:12, borderWidth:1, borderColor:C.border, borderRadius:4 },
-  backText:    { color:C.textDim, fontSize:11, fontWeight:"700", letterSpacing:1 },
-  headerTitle: { fontSize:13, fontWeight:"900", letterSpacing:4 },
+  headerRow:   { flexDirection:"row", alignItems:"center", paddingHorizontal:16, paddingTop:52, paddingBottom:8 },
+  backBtn:     { paddingVertical:8, paddingHorizontal:14, borderWidth:1, borderColor:"#e8e0f033", borderRadius:6, alignSelf:"flex-start", backgroundColor:"#e8e0f011" },
+  backText:    { color:"#e8e0f0", fontSize:16, fontWeight:"700" },
+  headerTitle: { fontSize:14, fontWeight:"900", letterSpacing:4, textAlign:"center", paddingHorizontal:16, paddingBottom:8, marginTop:4 },
 
   // Phase dots
   phaseDots:     { flexDirection:"row", justifyContent:"center", gap:8, marginBottom:8 },

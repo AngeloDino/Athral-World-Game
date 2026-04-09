@@ -182,9 +182,10 @@ export default function TrainingScreen({ navigation }) {
 
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backText}>← VOLVER</Text>
+            <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>ENTRENAMIENTO</Text>
+          <View style={{ width:40 }} />
           <View style={{ width: 70 }} />
         </View>
 
@@ -348,10 +349,10 @@ const styles = StyleSheet.create({
   root:   { flex:1, backgroundColor:C.bg },
   scroll: { paddingHorizontal:16, paddingTop:56, paddingBottom:32 },
 
-  header:      { flexDirection:"row", alignItems:"center", justifyContent:"space-between", marginBottom:20 },
-  backBtn:     { paddingVertical:6, paddingHorizontal:12, borderWidth:1, borderColor:C.border, borderRadius:4 },
-  backText:    { color:C.textDim, fontSize:11, fontWeight:"700", letterSpacing:1 },
-  headerTitle: { color:C.accent, fontSize:16, fontWeight:"900", letterSpacing:4 },
+  headerRow:   { flexDirection:"row", alignItems:"center", paddingHorizontal:16, paddingTop:52, paddingBottom:8 },
+  backBtn:     { paddingVertical:8, paddingHorizontal:14, borderWidth:1, borderColor:"#e8e0f033", borderRadius:6, alignSelf:"flex-start", backgroundColor:"#e8e0f011" },
+  backText:    { color:"#e8e0f0", fontSize:16, fontWeight:"700" },
+  headerTitle: { color:C.accent, fontSize:16, fontWeight:"900", letterSpacing:4, textAlign:"center", paddingHorizontal:16, paddingBottom:12, marginTop:4 },
 
   banner:        { backgroundColor:C.surface, borderWidth:1, borderColor:C.border, borderRadius:4, flexDirection:"row", marginBottom:24 },
   bannerItem:    { flex:1, paddingVertical:14, alignItems:"center", gap:4 },

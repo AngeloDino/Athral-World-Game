@@ -79,9 +79,10 @@ export default function WorldScreen({ navigation }) {
 
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backText}>← VOLVER</Text>
+            <Text style={styles.backText}>←</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>MUNDO</Text>
+          <View style={{ width:40 }} />
           <View style={styles.levelBadge}>
             <Text style={styles.levelBadgeText}>LV {playerLevel}</Text>
           </View>
@@ -298,7 +299,7 @@ const styles = StyleSheet.create({
   header:         { flexDirection:"row", alignItems:"center", justifyContent:"space-between", marginBottom:12 },
   backBtn:        { paddingVertical:6, paddingHorizontal:12, borderWidth:1, borderColor:C.border, borderRadius:2 },
   backText:       { color:C.textDim, fontSize:11, fontWeight:"700", letterSpacing:1 },
-  headerTitle:    { color:C.accent, fontSize:16, fontWeight:"900", letterSpacing:4 },
+  headerTitle:    { color:C.accent, fontSize:15, fontWeight:"900", letterSpacing:3, flex:1, textAlign:"center" },
   levelBadge:     { backgroundColor:C.accent, paddingHorizontal:10, paddingVertical:4, borderRadius:2 },
   levelBadgeText: { color:C.bg, fontSize:11, fontWeight:"900" },
 

@@ -253,15 +253,14 @@ export default function ZoneScreen({ route, navigation }) {
   return (
     <View style={s.root}>
       {/* Header */}
-      <View style={[s.header, { backgroundColor: zone.colorDark }]}>
+      <View style={[s.headerRow, { backgroundColor: zone.colorDark }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-          <Text style={s.backText}>← VOLVER</Text>
+          <Text style={s.backText}>←</Text>
         </TouchableOpacity>
-        <View style={s.headerCenter}>
-          <Text style={s.headerEmoji}>{zone.emoji}</Text>
-          <Text style={[s.headerName, { color: zone.color }]}>{zone.name.toUpperCase()}</Text>
-        </View>
-        <View style={{ width:70 }} />
+      </View>
+      <View style={[s.headerCenter, { backgroundColor: zone.colorDark }]}>
+        <Text style={s.headerEmoji}>{zone.emoji}</Text>
+        <Text style={[s.headerName, { color: zone.color }]}>{zone.name.toUpperCase()}</Text>
       </View>
       <Text style={s.headerDesc}>{zone.description}</Text>
 
@@ -305,10 +304,10 @@ const s = StyleSheet.create({
   loadingBox: { flex:1, justifyContent:"center", alignItems:"center" },
   scroll:     { paddingHorizontal:16, paddingTop:8 },
 
-  header:       { flexDirection:"row", alignItems:"center", justifyContent:"space-between", paddingHorizontal:16, paddingTop:52, paddingBottom:16 },
-  backBtn:      { paddingVertical:6, paddingHorizontal:12, borderWidth:1, borderColor:"#ffffff33", borderRadius:4 },
-  backText:     { color:"#ffffff99", fontSize:11, fontWeight:"700", letterSpacing:1 },
-  headerCenter: { alignItems:"center", gap:4 },
+  headerRow:    { flexDirection:"row", alignItems:"center", paddingHorizontal:16, paddingTop:52, paddingBottom:8 },
+  backBtn:      { paddingVertical:8, paddingHorizontal:14, borderWidth:1, borderColor:"#e8e0f033", borderRadius:6, alignSelf:"flex-start", backgroundColor:"#e8e0f011" },
+  backText:     { color:"#e8e0f0", fontSize:16, fontWeight:"700" },
+  headerCenter: { alignItems:"center", gap:4, paddingVertical:10 },
   headerEmoji:  { fontSize:24 },
   headerName:   { fontSize:13, fontWeight:"900", letterSpacing:2 },
   headerDesc:   { color:C.textDim, fontSize:12, textAlign:"center", paddingHorizontal:24, paddingBottom:8, lineHeight:18 },

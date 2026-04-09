@@ -80,12 +80,12 @@ export default function BattleIntro({ playerClass, playerGender, monster, onStar
       {/* Overlay oscuro sobre el fondo */}
       <View style={styles.zoneBgOverlay} />
 
-      {/* Botón salir */}
-      <TouchableOpacity style={styles.exitBtn} onPress={onExit}>
-        <Text style={styles.exitText}>← SALIR</Text>
-      </TouchableOpacity>
-
-      {/* Nombre del monstruo */}
+      {/* Fila superior: botón + nombre separados */}
+      <View style={styles.exitRow}>
+        <TouchableOpacity onPress={onExit} style={styles.exitBtn}>
+          <Text style={styles.exitText}>← SALIR</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.topInfo}>
         <Text style={styles.monsterName}>{monster?.name ?? "Monstruo"}</Text>
         <View style={[styles.tierBadge, { borderColor: monster?.tier === "jefe" ? "#bf4abf66" : "#e8c84a44" }]}>
@@ -162,16 +162,17 @@ const styles = StyleSheet.create({
   zoneBg:         { ...StyleSheet.absoluteFillObject, width:"100%", height:"100%" },
   zoneBgOverlay:  { ...StyleSheet.absoluteFillObject, backgroundColor:"#00000077" },
 
-  exitBtn:  { position:"absolute", top:52, left:16, zIndex:10, paddingVertical:6, paddingHorizontal:12, borderWidth:1, borderColor:"#2a2a3d", borderRadius:4 },
-  exitText: { color:"#6a6080", fontSize:11, fontWeight:"700", letterSpacing:1 },
+  exitRow:  { paddingTop:52, paddingHorizontal:16, paddingBottom:4 },
+  exitBtn:  { alignSelf:"flex-start", paddingVertical:6, paddingHorizontal:12, borderWidth:1, borderColor:"#ffffff44", borderRadius:4, backgroundColor:"#00000066" },
+  exitText: { color:"#ffffff99", fontSize:11, fontWeight:"700", letterSpacing:1 },
 
-  topInfo:     { paddingTop:52, alignItems:"center", gap:6, paddingHorizontal:24 },
+  topInfo:     { alignItems:"center", gap:6, paddingHorizontal:24, paddingTop:8 },
   monsterName: { color:"#e8e0f0", fontSize:20, fontWeight:"900", letterSpacing:2, textAlign:"center" },
   tierBadge:   { borderWidth:1, borderRadius:4, paddingHorizontal:12, paddingVertical:4 },
   tierText:    { fontSize:10, fontWeight:"900", letterSpacing:2 },
 
   // Arena
-  arena:  { flex:1, flexDirection:"row", alignItems:"center", justifyContent:"space-evenly", paddingHorizontal:16 },
+  arena:  { flex:1, flexDirection:"row", alignItems:"center", justifyContent:"space-evenly", paddingHorizontal:16, minHeight:200 },
   side:   { width: W * 0.36, alignItems:"center", gap:6 },
   charImg:{ width: W * 0.36, height: H * 0.40, alignSelf:"center" },
   fallback:{ fontSize:70 },
