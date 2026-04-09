@@ -323,13 +323,13 @@ export default function CharacterCreationScreen({ onFinish }) {
             style={[styles.genderBtn, gender === "m" && { backgroundColor: cls.color }]}
             onPress={() => setGender("m")}
           >
-            <Text style={[styles.genderBtnText, gender === "m" && { color: "#0a0a0f" }]}>♂ MASCULINO</Text>
+            <Text style={[styles.genderBtnText, gender === "m" && { color: "#000000" }]}>♂ MASCULINO</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.genderBtn, gender === "f" && { backgroundColor: cls.color }]}
             onPress={() => setGender("f")}
           >
-            <Text style={[styles.genderBtnText, gender === "f" && { color: "#0a0a0f" }]}>♀ FEMENINO</Text>
+            <Text style={[styles.genderBtnText, gender === "f" && { color: "#000000" }]}>♀ FEMENINO</Text>
           </TouchableOpacity>
         </View>
 
@@ -447,7 +447,7 @@ export default function CharacterCreationScreen({ onFinish }) {
           <View style={styles.confirmStatsRow}>
             {cls.stats.slice(0, 3).map(s => (
               <Text key={s.label} style={[styles.confirmStat, { color: s.color }]}>
-                {s.label} {s.val}
+                {STAT_LABELS[s.label] ?? s.label} {s.val}
               </Text>
             ))}
           </View>
@@ -469,7 +469,7 @@ export default function CharacterCreationScreen({ onFinish }) {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  root:    { flex:1, backgroundColor:"#0a0a0f" },
+  root:    { flex:1, backgroundColor:"#000000" },
 
   header:     { paddingHorizontal:24, paddingTop:6, paddingBottom:2 },
   headerTitle:{ color:"#e8c84a", fontSize:18, fontWeight:"900", letterSpacing:4 },
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
   cardWrapper:     { width: CARD_W + 12, alignItems:"center", justifyContent:"center" },
 
   // Card
-  card:         { borderWidth:2, borderRadius:12, overflow:"hidden", backgroundColor:"#0f0f1a" },
+  card:         { borderWidth:2, borderRadius:12, overflow:"hidden", backgroundColor:"#05050a" },
   cardTopBar:   { flexDirection:"row", justifyContent:"space-between", alignItems:"center", paddingHorizontal:12, paddingVertical:8 },
   cardName:     { fontSize:18, fontWeight:"900", letterSpacing:2 },
   tierBadge:    { borderWidth:1, borderRadius:3, paddingHorizontal:8, paddingVertical:3 },
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
   spriteBox: {
     position:"absolute", bottom:10, left:10,
     width:48, height:60, borderWidth:2, borderRadius:3,
-    backgroundColor:"#0a0a0f", overflow:"hidden",
+    backgroundColor:"#000000", overflow:"hidden",
   },
   spriteImage:   { width:"100%", height:"100%" },
   spriteOverlay: {
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
   statsGrid: { flexDirection:"row", flexWrap:"wrap", gap:6, marginVertical:10 },
   statRow:   {
     flexDirection:"row", alignItems:"center", justifyContent:"space-between",
-    gap:8, backgroundColor:"#1a1a28", paddingHorizontal:12, paddingVertical:9,
+    gap:8, backgroundColor:"#101018", paddingHorizontal:12, paddingVertical:9,
     borderRadius:4, width:"47%", borderWidth:1,
   },
   statLabel: { fontSize:12, fontWeight:"900", letterSpacing:1 },
@@ -525,11 +525,11 @@ const styles = StyleSheet.create({
   abilityDesc:  { fontSize:12, color:"#8a80a0", lineHeight:18 },
 
   genderRow: { flexDirection:"row", gap:10, paddingHorizontal:24, marginTop:6, marginBottom:6 },
-  genderBtn: { flex:1, backgroundColor:"#1a1a28", borderWidth:1, borderColor:"#2a2a3d", borderRadius:6, paddingVertical:8, alignItems:"center" },
+  genderBtn: { flex:1, backgroundColor:"#101018", borderWidth:1, borderColor:"#2a2a3d", borderRadius:6, paddingVertical:8, alignItems:"center" },
   genderBtnText:{ color:"#6a6080", fontSize:11, fontWeight:"900", letterSpacing:1 },
 
   nextBtn:     { marginHorizontal:24, marginBottom:8, paddingVertical:12, borderRadius:6, alignItems:"center" },
-  nextBtnText: { color:"#0a0a0f", fontSize:14, fontWeight:"900", letterSpacing:2 },
+  nextBtnText: { color:"#000000", fontSize:14, fontWeight:"900", letterSpacing:2 },
 
   backBtn:     { paddingHorizontal:20, paddingTop:16, paddingBottom:8 },
   backBtnText: { color:"#6a6080", fontSize:12, fontWeight:"700", letterSpacing:1 },
@@ -545,12 +545,12 @@ const styles = StyleSheet.create({
   stepSub:   { color:"#6a6080", fontSize:12, paddingHorizontal:20, marginBottom:16 },
 
   focusList: { paddingHorizontal:20, gap:10, paddingBottom:20 },
-  focusCard: { backgroundColor:"#12121a", borderWidth:1, borderRadius:6, padding:16, flexDirection:"row", alignItems:"center" },
+  focusCard: { backgroundColor:"#0a0a10", borderWidth:1, borderRadius:6, padding:16, flexDirection:"row", alignItems:"center" },
   focusInfo: { flex:1 },
   focusName: { fontSize:14, fontWeight:"900" },
   focusDesc: { color:"#6a6080", fontSize:11, marginTop:3 },
   focusCheck:    { width:24, height:24, borderRadius:12, justifyContent:"center", alignItems:"center" },
-  focusCheckText:{ color:"#0a0a0f", fontSize:14, fontWeight:"900" },
+  focusCheckText:{ color:"#000000", fontSize:14, fontWeight:"900" },
 
   // Step 2
   confirmCard: {

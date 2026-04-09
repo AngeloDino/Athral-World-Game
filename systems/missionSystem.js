@@ -1,9 +1,9 @@
 // ─── Mission System ───────────────────────────────────────────────────────────
 
 export const EXERCISES = {
-  pushups: { label: "Push-ups", emoji: "💪", stat: "STR", secondaryStat: "END" },
-  squats:  { label: "Squats",   emoji: "🦵", stat: "AGI", secondaryStat: "VIT" },
-  situps:  { label: "Sit-ups",  emoji: "🔥", stat: "END", secondaryStat: "STR" },
+  pushups: { label: "Flexiones",   emoji: "💪", stat: "STR", secondaryStat: "END" },
+  squats:  { label: "Sentadillas", emoji: "🦵", stat: "AGI", secondaryStat: "VIT" },
+  situps:  { label: "Abdominales", emoji: "🔥", stat: "END", secondaryStat: "STR" },
 };
 
 export const MISSION_TIME = {
@@ -24,7 +24,8 @@ export const MISSION_XP = {
   hard:   200,   // Subido de 175
 };
 
-export const FREE_TRAIN_DURATIONS = [5, 10, 15, 20];
+export const FREE_TRAIN_DURATIONS  = [5, 10, 15, 20];
+export const POMODORO_DURATIONS   = [25, 45, 60];
 
 // Tipos de misión para variedad
 const MISSION_TYPES = [
@@ -72,11 +73,13 @@ export function generateDailyMissions(playerLevel = 1, playerClass = null, playe
 // Construye un pool de ejercicios priorizando la clase/enfoque del jugador
 function buildExercisePool(classId, focusId, allExercises) {
   const CLASS_EXERCISES = {
-    warrior:  ["pushups", "pushups", "squats", "situps"],
-    mage:     ["situps",  "situps",  "pushups", "squats"],
-    archer:   ["squats",  "squats",  "pushups", "situps"],
-    monk:     ["pushups", "squats",  "situps"],
-    assassin: ["squats",  "pushups", "squats",  "situps"],
+    knight:    ["pushups", "pushups", "squats", "situps"],
+    gladiator: ["pushups", "pushups", "squats", "situps"],
+    barbarian: ["pushups", "pushups", "situps", "squats"],
+    mage:      ["situps",  "situps",  "pushups", "squats"],
+    archer:    ["squats",  "squats",  "pushups", "situps"],
+    assassin:  ["squats",  "pushups", "squats",  "situps"],
+    scientist: ["situps",  "situps",  "squats",  "pushups"],
   };
 
   const FOCUS_EXERCISES = {

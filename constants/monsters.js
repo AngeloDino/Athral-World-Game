@@ -24,7 +24,7 @@ export const ZONES = [
     xpMultiplier: 1.0,
     monsters:    ["slime_rojo", "lobo_sombra", "goblin_verde"],
     rareMonsters:["goblin_etereo"],
-    boss:        null, // próximamente
+    boss:        "guardian_bosque",
     comingSoon:  false,
   },
   {
@@ -146,11 +146,12 @@ export const BOSSES = {
     zone:"dark_forest", tier:"jefe",
     xp: 800,
     statReward: { STR:2, AGI:2, END:2, VIT:1 },
-    description: "El espíritu protector del bosque corrompido. Requiere dominar los 3 pilares del entrenamiento.",
+    description: "El espíritu del bosque corrompido por una fuerza ancestral. Sus ojos brillan con veneno y sus raíces devoran todo a su paso.",
+    art: require("../assets/monsters/dark_forest/forest_guardian.png"),
     phases: [
-      { exercise:"pushups", reps:20, timer:90,  label:"Fase I  — Fuerza" },
-      { exercise:"squats",  reps:20, timer:90,  label:"Fase II — Agilidad" },
-      { exercise:"situps",  reps:20, timer:90,  label:"Fase III — Resistencia" },
+      { exercise:"pushups", reps:20, timer:90,  label:"Fase I  — Garras de Raíz" },
+      { exercise:"squats",  reps:20, timer:90,  label:"Fase II — Tormenta de Espinas" },
+      { exercise:"situps",  reps:20, timer:90,  label:"Fase III — Núcleo Corrompido" },
     ],
   },
   rey_cristal: {

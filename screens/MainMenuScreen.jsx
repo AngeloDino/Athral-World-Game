@@ -31,9 +31,9 @@ function getSprite(classId, gender) {
 }
 
 const C = {
-  bg:           "#0a0a0f",
-  surface:      "#12121a",
-  surface2:     "#1a1a28",
+  bg:           "#000000",
+  surface:      "#0a0a10",
+  surface2:     "#101018",
   border:       "#2a2a3d",
   borderGlow:   "#4a3f8a",
   primary:      "#7c5cbf",
@@ -48,10 +48,11 @@ const C = {
 };
 
 const STAT_CONFIG = {
-  STR: { label: "STR", color: "#e05555", emoji: "⚔️" },
-  AGI: { label: "AGI", color: "#55c080", emoji: "💨" },
-  END: { label: "END", color: "#5599e0", emoji: "🛡️" },
-  VIT: { label: "VIT", color: "#e055aa", emoji: "❤️" },
+  STR: { label: "Fuerza",        color: "#e05555", emoji: "⚔️" },
+  AGI: { label: "Agilidad",      color: "#55c080", emoji: "💨" },
+  END: { label: "Resistencia",   color: "#5599e0", emoji: "🛡️" },
+  VIT: { label: "Vitalidad",     color: "#e055aa", emoji: "❤️" },
+  INT: { label: "Inteligencia",  color: "#a07de0", emoji: "🧠" },
 };
 
 const MENU_BUTTONS = [
@@ -135,7 +136,7 @@ export default function MainMenuScreen({ navigation }) {
     );
   }
 
-  const stats       = profile?.stats || { STR:0, AGI:0, END:0, VIT:0 };
+  const stats       = profile?.stats || { STR:0, AGI:0, END:0, VIT:0, INT:0 };
   // Usar el rango guardado en Firestore (subida manual)
   const savedRankId  = profile?.rank ?? "F";
   const { RANKS: ALL_RANKS } = require("../systems/rankSystem");
@@ -216,7 +217,10 @@ export default function MainMenuScreen({ navigation }) {
         <View style={styles.card}>
           <Text style={styles.sectionLabel}>ATRIBUTOS</Text>
           <View style={styles.statsGrid}>
-            {Object.entries(STAT_CONFIG).map(([key, cfg]) => (
+            {Object.entries(STAT_CONFIG).filter(([key]) => {
+              if (key === "INT") return (stats.INT ?? 0) > 0;
+              return true;
+            }).map(([key, cfg]) => (
               <View key={key} style={[styles.statCard, { borderColor: cfg.color + "44" }]}>
                 <Text style={styles.statEmoji}>{cfg.emoji}</Text>
                 <Text style={[styles.statValue, { color: cfg.color }]}>{stats[key] ?? 0}</Text>

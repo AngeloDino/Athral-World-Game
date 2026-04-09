@@ -8,8 +8,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const C = {
-  bg:           "#0a0a0f",
-  surface:      "#12121a",
+  bg:           "#000000",
+  surface:      "#0a0a10",
   border:       "#2a2a3d",
   borderGlow:   "#4a3f8a",
   accent:       "#e8c84a",

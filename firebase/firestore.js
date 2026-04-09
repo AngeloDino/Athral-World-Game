@@ -288,3 +288,25 @@ export async function checkBossDefeated(uid, bossId) {
   const snap  = await getDoc(ref);
   return snap.exists();
 }
+
+// ─── Completar Pomodoro ───────────────────────────────────────────────────────
+
+export async function completePomodoro(uid, intGain = 1) {
+  const userRef = doc(db, "users", uid);
+  const today   = todayString();
+
+  await runTransaction(db, async (tx) => {
+    const userSnap = await tx.get(userRef);
+    if (!userSnap.exists()) return;
+    const data = userSnap.data();
+
+    const newStats = { ...data.stats };
+    newStats["INT"] = (newStats["INT"] || 0) + intGain;
+
+    tx.update(userRef, {
+      stats:            newStats,
+      lastActiveDate:   today,
+      totalPomodoros:   (data.totalPomodoros ?? 0) + 1,
+    });
+  });
+}

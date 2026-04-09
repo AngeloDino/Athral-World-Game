@@ -14,9 +14,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const C = {
-  bg:      "#0a0a0f",
-  surface: "#12121a",
-  surface2:"#1a1a28",
+  bg:      "#000000",
+  surface: "#0a0a10",
+  surface2:"#101018",
   border:  "#2a2a3d",
   borderGlow:"#4a3f8a",
   accent:  "#e8c84a",

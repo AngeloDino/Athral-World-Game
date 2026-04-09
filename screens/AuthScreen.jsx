@@ -15,8 +15,8 @@ import { registerUser, loginUser } from "../firebase/auth";
 
 // ─── Theme ───────────────────────────────────────────────────────────────────
 const COLORS = {
-  bg: "#0a0a0f",
-  surface: "#12121a",
+  bg: "#000000",
+  surface: "#0a0a10",
   border: "#2a2a3d",
   borderGlow: "#4a3f8a",
   primary: "#7c5cbf",
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   tabActive: {
     borderBottomWidth: 2,
     borderBottomColor: COLORS.accent,
-    backgroundColor: "#1a1a28",
+    backgroundColor: "#101018",
   },
   tabText: {
     fontSize: 11,

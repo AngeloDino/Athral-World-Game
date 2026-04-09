@@ -8,15 +8,16 @@ import { listenToUserProfile } from "../firebase/firestore";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { getCurrentRank, getNextRank, getRankProgress, getTotalStats, RANKS } from "../systems/rankSystem";
+import { STAT_LABELS, STAT_ICONS, STAT_COLORS } from "../constants/labels";
 import { TutorialOverlay } from "../components/TutorialOverlay";
 import { RankUpOverlay } from "../components/LevelUpOverlay";
 import { xpRequiredForLevel } from "../systems/xpSystem";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 const C = {
-  bg:           "#0a0a0f",
-  surface:      "#12121a",
-  surface2:     "#1a1a28",
+  bg:           "#000000",
+  surface:      "#0a0a10",
+  surface2:     "#101018",
   border:       "#2a2a3d",
   borderGlow:   "#4a3f8a",
   accent:       "#e8c84a",
@@ -30,10 +31,11 @@ const C = {
 };
 
 const STAT_CONFIG = {
-  STR: { label: "Fuerza",     color: "#e05555", emoji: "⚔️",  desc: "Daño en combate" },
-  AGI: { label: "Agilidad",   color: "#55c080", emoji: "💨",  desc: "Velocidad y esquiva" },
-  END: { label: "Resistencia",color: "#5599e0", emoji: "🛡️", desc: "Duración en combate" },
-  VIT: { label: "Vitalidad",  color: "#e055aa", emoji: "❤️",  desc: "Puntos de vida" },
+  STR: { label: "Fuerza",       color: "#e05555", emoji: "⚔️",  desc: "Potencia en flexiones" },
+  AGI: { label: "Agilidad",     color: "#55c080", emoji: "💨",  desc: "Velocidad en sentadillas" },
+  END: { label: "Resistencia",  color: "#5599e0", emoji: "🛡️", desc: "Duración en abdominales" },
+  VIT: { label: "Vitalidad",    color: "#e055aa", emoji: "❤️",  desc: "Puntos de vida máximos" },
+  INT: { label: "Inteligencia", color: "#a07de0", emoji: "🧠",  desc: "Poder mental — sube con Pomodoros" },
 };
 
 // ─── Animated Bar ─────────────────────────────────────────────────────────────
@@ -124,7 +126,7 @@ export default function StatisticsScreen({ navigation }) {
     );
   }
 
-  const stats        = profile?.stats ?? { STR:0, AGI:0, END:0, VIT:0 };
+  const stats        = profile?.stats ?? { STR:0, AGI:0, END:0, VIT:0, INT:0 };
   const totalStats   = getTotalStats(stats);
   const currentRank  = getCurrentRank(profile);
   const nextRank     = getNextRank(currentRank.id);
@@ -265,7 +267,10 @@ export default function StatisticsScreen({ navigation }) {
             <Text style={styles.statsTotalBadge}>Total: {totalStats}</Text>
           </View>
           <View style={styles.statsCard}>
-            {Object.entries(STAT_CONFIG).map(([key, cfg]) => {
+            {Object.entries(STAT_CONFIG).filter(([key]) => {
+              if (key === "INT") return (stats.INT ?? 0) > 0;
+              return true;
+            }).map(([key, cfg]) => {
               const val = stats[key] ?? 0;
               return (
                 <View key={key} style={styles.statRow}>
@@ -383,7 +388,7 @@ const styles = StyleSheet.create({
   rankProgressCard:   { backgroundColor:C.surface, borderWidth:1, borderColor:C.border, borderRadius:4, padding:16, gap:14 },
   rankProgressHeader: { flexDirection:"row", justifyContent:"space-between", alignItems:"center", marginBottom:10 },
   rankUpBtn:          { backgroundColor:"#e8c84a", paddingHorizontal:12, paddingVertical:8, borderRadius:4 },
-  rankUpBtnText:      { color:"#0a0a0f", fontSize:11, fontWeight:"900", letterSpacing:1 },
+  rankUpBtnText:      { color:"#000000", fontSize:11, fontWeight:"900", letterSpacing:1 },
   reqRow:       { gap:8 },
   reqLeft:      { flexDirection:"row", alignItems:"center", gap:10 },
   reqEmoji:     { fontSize:18, width:28 },

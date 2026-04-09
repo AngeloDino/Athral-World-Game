@@ -4,13 +4,14 @@ import {
   Animated, ActivityIndicator,
 } from "react-native";
 import { auth } from "../firebase/config";
-import { getTodayMissions, listenToTodayMissions } from "../firebase/firestore";
-import { EXERCISES, MISSION_XP, FREE_TRAIN_DURATIONS } from "../systems/missionSystem";
+import { getTodayMissions, listenToTodayMissions, completePomodoro } from "../firebase/firestore";
+import { EXERCISES, MISSION_XP, FREE_TRAIN_DURATIONS, POMODORO_DURATIONS } from "../systems/missionSystem";
 import { DIFFICULTY_CONFIG_MAP } from "../constants/combatConfig";
 import { TutorialOverlay } from "../components/TutorialOverlay";
+import { getPomodoroIntGain } from "../constants/classes";
 
 const C = {
-  bg:"#0a0a0f", surface:"#12121a", surface2:"#1a1a28",
+  bg:"#000000", surface:"#0a0a10", surface2:"#101018",
   border:"#2a2a3d", borderGlow:"#4a3f8a",
   accent:"#e8c84a", text:"#e8e0f0", textDim:"#6a6080",
   success:"#55c080",
@@ -70,7 +71,16 @@ export default function TrainingScreen({ navigation }) {
   const [missions, setMissions] = useState(null);
   const [loading, setLoading]   = useState(true);
   const uid = auth.currentUser?.uid;
-  const [playerClass, setPlayerClass] = useState(null);
+  const [playerClass, setPlayerClass]   = useState(null);
+  const [playerGender, setPlayerGender] = useState("m");
+  const [pomodoroActive, setPomodoroActive]     = useState(false);
+  const [pomodoroDuration, setPomodoroDuration] = useState(25);
+  const [pomodoroTimeLeft, setPomodoroTimeLeft] = useState(25 * 60);
+  const [pomodoroRunning, setPomodoroRunning]   = useState(false);
+  const [pomodoroCompleted, setPomodoroCompleted] = useState(0);
+  const [pomodoroIntGained, setPomodoroIntGained] = useState(null);
+  const pomodoroRef = useRef(null);
+  const pomodoroAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!uid) return;
@@ -83,6 +93,7 @@ export default function TrainingScreen({ navigation }) {
       const cls   = data.class ?? null;
       const focus = data.focus ?? null;
       setPlayerClass(cls);
+      setPlayerGender(data.gender ?? "m");
       await getTodayMissions(uid, level, cls, focus);
       setLoading(false);
     }
@@ -91,12 +102,75 @@ export default function TrainingScreen({ navigation }) {
     return unsub;
   }, [uid]);
 
+  function startPomodoro() {
+    setPomodoroTimeLeft(pomodoroDuration * 60);
+    setPomodoroIntGained(null);
+    setPomodoroRunning(true);
+    pomodoroRef.current = setInterval(() => {
+      setPomodoroTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(pomodoroRef.current);
+          setPomodoroRunning(false);
+          handlePomodoroComplete();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  function pausePomodoro() {
+    if (pomodoroRunning) {
+      clearInterval(pomodoroRef.current);
+      setPomodoroRunning(false);
+    } else {
+      pomodoroRef.current = setInterval(() => {
+        setPomodoroTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(pomodoroRef.current);
+            setPomodoroRunning(false);
+            handlePomodoroComplete();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      setPomodoroRunning(true);
+    }
+  }
+
+  function cancelPomodoro() {
+    clearInterval(pomodoroRef.current);
+    setPomodoroRunning(false);
+    setPomodoroActive(false);
+    setPomodoroTimeLeft(pomodoroDuration * 60);
+    setPomodoroIntGained(null);
+  }
+
+  async function handlePomodoroComplete() {
+    const intGain = getPomodoroIntGain(playerClass);
+    try {
+      await completePomodoro(uid, intGain);
+    } catch(e) { console.error(e); }
+    setPomodoroCompleted(c => c + 1);
+    setPomodoroIntGained(intGain);
+    Animated.sequence([
+      Animated.timing(pomodoroAnim, { toValue:1, duration:400, useNativeDriver:true }),
+      Animated.delay(2000),
+      Animated.timing(pomodoroAnim, { toValue:0, duration:400, useNativeDriver:true }),
+    ]).start();
+  }
+
+  function formatPomodoroTime(s) {
+    return `${Math.floor(s/60).toString().padStart(2,"0")}:${(s%60).toString().padStart(2,"0")}`;
+  }
+
   function startMission(difficulty, mission) {
-    navigation.navigate("Combat", { mode: "mission", difficulty, mission, playerClass });
+    navigation.navigate("Combat", { mode:"mission", difficulty, mission, playerClass, playerGender });
   }
 
   function startFree(exercise, durationMinutes) {
-    navigation.navigate("Combat", { mode: "free", exercise, durationMinutes, playerClass });
+    navigation.navigate("Combat", { mode:"free", exercise, durationMinutes, playerClass, playerGender });
   }
 
   const completedCount = missions ? ["easy","medium","hard"].filter(d => missions[d]?.completed).length : 0;
@@ -177,6 +251,91 @@ export default function TrainingScreen({ navigation }) {
           ))}
         </View>
 
+        {/* ── Pomodoro ── */}
+        <View style={styles.pomodoroSection}>
+          <Text style={styles.sectionLabel}>🧠 POMODORO — Entrena tu mente</Text>
+          <Text style={styles.pomodoroSubtitle}>
+            {playerClass === "mage" || playerClass === "scientist"
+              ? "Tu clase gana +2 Inteligencia por sesión completada"
+              : "Completa una sesión para ganar +1 Inteligencia"}
+          </Text>
+
+          {!pomodoroActive ? (
+            <View style={styles.pomodoroSetup}>
+              {/* Selector de duración */}
+              <View style={styles.pomodoroDurations}>
+                {[25, 45, 60].map(min => (
+                  <TouchableOpacity
+                    key={min}
+                    style={[styles.pomodoroDurationBtn, pomodoroDuration === min && { backgroundColor:"#a07de0", borderColor:"#a07de0" }]}
+                    onPress={() => { setPomodoroDuration(min); setPomodoroTimeLeft(min * 60); }}
+                  >
+                    <Text style={[styles.pomodoroDurationText, pomodoroDuration === min && { color:"#000000" }]}>{min} min</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TouchableOpacity style={styles.pomodoroStartBtn} onPress={() => { setPomodoroActive(true); startPomodoro(); }}>
+                <Text style={styles.pomodoroStartText}>▶  INICIAR SESIÓN</Text>
+              </TouchableOpacity>
+
+              {pomodoroCompleted > 0 && (
+                <View style={styles.pomodoroStats}>
+                  <Text style={styles.pomodoroStatsText}>
+                    🧠 {pomodoroCompleted} sesión{pomodoroCompleted > 1 ? "es" : ""} completada{pomodoroCompleted > 1 ? "s" : ""} hoy
+                  </Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            <View style={styles.pomodoroTimer}>
+              {/* Timer circular */}
+              <View style={[styles.pomodoroCircle, { borderColor: pomodoroRunning ? "#a07de0" : C.border }]}>
+                <Text style={[styles.pomodoroTime, { color: pomodoroRunning ? "#a07de0" : C.textDim }]}>
+                  {formatPomodoroTime(pomodoroTimeLeft)}
+                </Text>
+                <Text style={styles.pomodoroStatus}>
+                  {pomodoroTimeLeft === 0 ? "¡COMPLETADO!" : pomodoroRunning ? "CONCENTRADO" : "PAUSADO"}
+                </Text>
+              </View>
+
+              {/* Barra de progreso */}
+              <View style={styles.pomodoroTrack}>
+                <View style={[styles.pomodoroFill, {
+                  width: `${((pomodoroDuration * 60 - pomodoroTimeLeft) / (pomodoroDuration * 60)) * 100}%`,
+                  backgroundColor: "#a07de0",
+                }]} />
+              </View>
+
+              {/* INT ganada */}
+              <Animated.View style={[styles.pomodoroReward, { opacity: pomodoroAnim }]}>
+                <Text style={styles.pomodoroRewardText}>
+                  +{pomodoroIntGained} Inteligencia ganada ✨
+                </Text>
+              </Animated.View>
+
+              {/* Controles */}
+              <View style={styles.pomodoroControls}>
+                <TouchableOpacity style={styles.pomodoroCancelBtn} onPress={cancelPomodoro}>
+                  <Text style={styles.pomodoroCancelText}>CANCELAR</Text>
+                </TouchableOpacity>
+                {pomodoroTimeLeft > 0 && (
+                  <TouchableOpacity style={[styles.pomodoroPauseBtn, { backgroundColor: pomodoroRunning ? "#101018" : "#a07de0" }]} onPress={pausePomodoro}>
+                    <Text style={[styles.pomodoroPauseText, { color: pomodoroRunning ? "#a07de0" : "#000000" }]}>
+                      {pomodoroRunning ? "⏸  PAUSAR" : "▶  CONTINUAR"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+                {pomodoroTimeLeft === 0 && (
+                  <TouchableOpacity style={styles.pomodoroPauseBtn} onPress={() => { setPomodoroActive(false); setPomodoroTimeLeft(pomodoroDuration * 60); }}>
+                    <Text style={[styles.pomodoroPauseText, { color:"#000000" }]}>✓ LISTO</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+        </View>
+
         <View style={{ height: 40 }} />
       </ScrollView>
 
@@ -201,6 +360,32 @@ const styles = StyleSheet.create({
   bannerLabel:   { color:C.textDim, fontSize:9, letterSpacing:2, fontWeight:"700" },
 
   sectionLabel:       { color:C.textDim, fontSize:10, fontWeight:"700", letterSpacing:3, marginBottom:10 },
+
+  // Pomodoro
+  pomodoroSection:    { paddingTop:8, paddingBottom:8 },
+  pomodoroSubtitle:   { color:C.textDim, fontSize:11, marginBottom:14, lineHeight:16 },
+  pomodoroSetup:      { gap:12 },
+  pomodoroDurations:  { flexDirection:"row", gap:8 },
+  pomodoroDurationBtn:{ flex:1, borderWidth:1, borderColor:"#2a2a3d", borderRadius:6, paddingVertical:10, alignItems:"center", backgroundColor:C.surface },
+  pomodoroDurationText:{ color:C.textDim, fontSize:13, fontWeight:"700" },
+  pomodoroStartBtn:   { backgroundColor:"#a07de0", borderRadius:6, paddingVertical:14, alignItems:"center" },
+  pomodoroStartText:  { color:"#000000", fontSize:13, fontWeight:"900", letterSpacing:2 },
+  pomodoroStats:      { backgroundColor:C.surface, borderRadius:6, padding:12, alignItems:"center" },
+  pomodoroStatsText:  { color:"#a07de0", fontSize:12, fontWeight:"700" },
+
+  pomodoroTimer:      { alignItems:"center", gap:14 },
+  pomodoroCircle:     { width:160, height:160, borderRadius:80, borderWidth:3, justifyContent:"center", alignItems:"center", gap:6 },
+  pomodoroTime:       { fontSize:36, fontWeight:"900", letterSpacing:2 },
+  pomodoroStatus:     { fontSize:9, fontWeight:"700", letterSpacing:2, color:C.textDim },
+  pomodoroTrack:      { width:"100%", height:6, backgroundColor:C.surface, borderRadius:3, overflow:"hidden" },
+  pomodoroFill:       { height:"100%", borderRadius:3 },
+  pomodoroReward:     { backgroundColor:"#a07de022", borderWidth:1, borderColor:"#a07de066", borderRadius:6, paddingHorizontal:16, paddingVertical:8 },
+  pomodoroRewardText: { color:"#a07de0", fontSize:14, fontWeight:"900" },
+  pomodoroControls:   { flexDirection:"row", gap:10, width:"100%" },
+  pomodoroCancelBtn:  { flex:1, borderWidth:1, borderColor:C.border, borderRadius:6, paddingVertical:13, alignItems:"center" },
+  pomodoroCancelText: { color:C.textDim, fontSize:12, fontWeight:"700", letterSpacing:1 },
+  pomodoroPauseBtn:   { flex:2, borderRadius:6, paddingVertical:13, alignItems:"center", backgroundColor:"#a07de0" },
+  pomodoroPauseText:  { fontSize:12, fontWeight:"900", letterSpacing:1 },
   missionsContainer:  { gap:12, marginBottom:24 },
 
   missionCard:       { backgroundColor:C.surface, borderWidth:1, borderRadius:4, padding:16, gap:12 },
