@@ -4,6 +4,7 @@ import {
   Animated, Dimensions, FlatList, Image,
   Platform, StatusBar,
 } from "react-native";
+import { STAT_LABELS } from "../constants/labels";
 
 const SAFE_TOP    = Platform.OS === "android" ? (StatusBar.currentHeight ?? 24) : 44;
 const SAFE_BOTTOM = Platform.OS === "android" ? 16 : 34;

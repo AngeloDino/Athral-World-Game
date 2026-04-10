@@ -78,12 +78,13 @@ const styles = StyleSheet.create({
   root: {
     flex:1, backgroundColor:"#000000",
     justifyContent:"center", alignItems:"center", gap:8,
+    paddingHorizontal:0,
   },
   starsContainer: { ...StyleSheet.absoluteFillObject, overflow:"hidden" },
   star:           { position:"absolute", backgroundColor:"#e8e0f0", borderRadius:99 },
 
-  logoContainer: { alignItems:"center", marginBottom:8 },
-  logoImage:     { width: W * 0.55, height: W * 0.55 },
+  logoContainer: { width:"100%", alignItems:"center", justifyContent:"center", marginBottom:8 },
+  logoImage:     { width: W * 0.62, height: W * 0.62, marginLeft:-12 },
 
   titleContainer: { alignItems:"center", gap:4 },
   title:    { fontSize:48, fontWeight:"900", color:"#e8c84a", letterSpacing:14 },

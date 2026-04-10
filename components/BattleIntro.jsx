@@ -118,7 +118,7 @@ export default function BattleIntro({ playerClass, playerGender, monster, onStar
         {/* Monstruo derecha */}
         <Animated.View style={[styles.side, { transform:[{ translateX: monsterX }] }]}>
           {monsterArt ? (
-            <Image source={monsterArt} style={[styles.charImg, { transform:[{ scaleX:-1 }] }]} resizeMode="contain" />
+            <Image source={monsterArt} style={[styles.charImg]} resizeMode="contain" />
           ) : (
             <Text style={styles.fallback}>{monster?.emoji ?? "👹"}</Text>
           )}
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   center: { width: W * 0.10, alignItems:"center", justifyContent:"center" },
   vs:     { color:"#e8c84a", fontSize:18, fontWeight:"900", letterSpacing:2 },
   impact: { position:"absolute" },
-  impactEmoji:{ fontSize:36 },
+  impactEmoji:{ fontSize:36, marginTop:-12 },
 
   // Info
   infoRow:    { flexDirection:"row", marginHorizontal:16, backgroundColor:"#0a0a10", borderRadius:8, borderWidth:1, borderColor:"#2a2a3d" },

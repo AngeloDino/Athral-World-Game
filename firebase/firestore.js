@@ -33,7 +33,16 @@ export function listenToTodayMissions(uid, callback) {
   const today = todayString();
   const ref   = doc(db, "users", uid, "dailyMissions", today);
   return onSnapshot(ref, (snap) => {
-    if (snap.exists()) callback(snap.data());
+    if (!snap.exists()) return;
+    const data = snap.data();
+    // Sanitize — remove null or invalid missions
+    const sanitized = {};
+    for (const [key, val] of Object.entries(data)) {
+      if (val && typeof val === "object" && val.exercise) {
+        sanitized[key] = val;
+      }
+    }
+    callback(sanitized);
   });
 }
 

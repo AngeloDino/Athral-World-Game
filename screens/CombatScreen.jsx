@@ -5,6 +5,8 @@ import {
   ScrollView, Image, Dimensions,
 } from "react-native";
 import { auth } from "../firebase/config";
+import g from "../constants/globalStyles";
+import { colors as C, spacing as S, typography as T, radius as R } from "../constants/theme";
 import { completeMission, defeatMonster, completeFreeTrain, defeatTowerFloor, failTowerSession, defeatBoss } from "../firebase/firestore";
 import { EXERCISES } from "../systems/missionSystem";
 import { DIFFICULTY_CONFIG_MAP } from "../constants/combatConfig";
@@ -14,13 +16,6 @@ import BattleIntro from "../components/BattleIntro";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: W, height: H } = Dimensions.get("window");
-
-const C = {
-  bg:"#000000", surface:"#0a0a10", surface2:"#101018",
-  border:"#2a2a3d", accent:"#e8c84a", text:"#e8e0f0",
-  textDim:"#6a6080", success:"#55c080", warning:"#e8a84a",
-  danger:"#e05555", boss:"#bf4abf",
-};
 
 // ─── Mapa de sprites por clase ─────────────────────────────────────────────
 const CLASS_SPRITES = {
@@ -202,9 +197,9 @@ function BattleArena({ playerClass, playerGender, monster, isBoss, phase, timerP
       {/* Monstruo */}
       <Animated.View style={[arena.monsterSide, { opacity: monsterOp, transform:[{ translateY: monsterBob }, { translateX: monsterHit }] }]}>
         {monsterSprite ? (
-          <Image source={monsterSprite} style={[arena.monsterSprite, { transform:[{ scaleX:-1 }] }]} resizeMode="contain" />
+          <Image source={monsterSprite} style={[arena.monsterSprite]} resizeMode="contain" />
         ) : monsterArt ? (
-          <Image source={monsterArt} style={[arena.monsterArtSmall, { transform:[{ scaleX:-1 }] }]} resizeMode="contain" />
+          <Image source={monsterArt} style={[arena.monsterArtSmall]} resizeMode="contain" />
         ) : <Text style={arena.fallback}>{monster?.emoji ?? "👹"}</Text>}
         <View style={arena.hpBarBg}>
           <View style={[arena.hpFill, { width:`${monsterHP * 100}%`, backgroundColor: monsterHpColor }]} />
@@ -434,8 +429,8 @@ export default function CombatScreen({ route, navigation }) {
     return (
       <SafeAreaView style={styles.root}>
         <View style={styles.topHeader}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backText}>←</Text>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={g.backBtn}>
+            <Text style={g.backBtnText}>←</Text>
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: C.boss }]}>COMBATE DE JEFE</Text>
           <View style={{ width:60 }} />
@@ -455,8 +450,8 @@ export default function CombatScreen({ route, navigation }) {
     <SafeAreaView style={styles.root}>
       {/* Header */}
       <View style={styles.topHeader}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>←</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={g.backBtn}>
+          <Text style={g.backBtnText}>←</Text>
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: config.color }]}>{config.title}</Text>
         <View style={{ width:60 }} />

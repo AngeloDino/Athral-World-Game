@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Animated, Dimensions, ScrollView,
+  Animated, Dimensions, ScrollView, Image,
 } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -22,7 +22,8 @@ const C = {
 // ─── Slide Data ───────────────────────────────────────────────────────────────
 const SLIDES = [
   {
-    emoji:    "🌍",
+    emoji:    null,
+    logo:     true,
     title:    "Bienvenido a\nAthral World",
     subtitle: "Un mundo donde tu esfuerzo físico\nse convierte en poder real.",
     color:    "#a07de0",
@@ -40,7 +41,6 @@ const SLIDES = [
     items: [
       { emoji: "📋", text: "Completa misiones diarias para ganar XP" },
       { emoji: "👹", text: "Derrota monstruos completando ejercicios" },
-      { emoji: "🗼", text: "Sube la Torre de Babel para dominar" },
       { emoji: "📊", text: "Tus stats crecen con tu cuerpo real" },
     ],
   },
@@ -62,10 +62,14 @@ function Slide({ slide }) {
   return (
     <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
       <View style={styles.slideInner}>
-        {/* Emoji grande */}
-        <View style={[styles.emojiCircle, { borderColor: slide.color + "44", backgroundColor: slide.color + "11" }]}>
-          <Text style={styles.slideEmoji}>{slide.emoji}</Text>
-        </View>
+        {/* Logo o emoji */}
+        {slide.logo ? (
+          <Image source={require("../assets/icon.png")} style={styles.slideLogo} resizeMode="contain" />
+        ) : (
+          <View style={[styles.emojiCircle, { borderColor: slide.color + "44", backgroundColor: slide.color + "11" }]}>
+            <Text style={styles.slideEmoji}>{slide.emoji}</Text>
+          </View>
+        )}
 
         {/* Título */}
         <Text style={[styles.slideTitle, { color: slide.color }]}>
@@ -189,13 +193,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   slideEmoji:    { fontSize: 56 },
+  slideLogo:     { width: SCREEN_WIDTH * 0.45, height: SCREEN_WIDTH * 0.45, alignSelf:"center", marginLeft:-12, marginBottom: -20 },
   slideTitle: {
     fontSize: 32, fontWeight: "900", textAlign: "center",
-    letterSpacing: 1, lineHeight: 40,
+    letterSpacing: 1, lineHeight: 40, marginBottom: 10, marginLeft:-9,
   },
   slideSubtitle: {
     color: C.textDim, fontSize: 15, textAlign: "center",
-    lineHeight: 22, letterSpacing: 0.5,
+    lineHeight: 22, letterSpacing: 0.5, marginBottom: 12,
   },
 
   itemsContainer: { width: "100%", gap: 10 },
@@ -205,7 +210,7 @@ const styles = StyleSheet.create({
     borderRadius: 4, paddingHorizontal: 16, paddingVertical: 12,
   },
   itemEmoji: { fontSize: 20, width: 28 },
-  itemText:  { color: C.text, fontSize: 14, flex: 1, lineHeight: 20 },
+  itemText:  { color: C.text, fontSize: 14, flex: 1, lineHeight: 30 },
 
   // Controls
   controls: {

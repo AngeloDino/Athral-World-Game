@@ -4,6 +4,8 @@ import {
   TouchableOpacity, Animated, ActivityIndicator,
 } from "react-native";
 import { auth } from "../firebase/config";
+import g from "../constants/globalStyles";
+import { colors as C, spacing as S, typography as T, radius as R } from "../constants/theme";
 import { listenToUserProfile } from "../firebase/firestore";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
@@ -12,23 +14,6 @@ import { STAT_LABELS, STAT_ICONS, STAT_COLORS } from "../constants/labels";
 import { TutorialOverlay } from "../components/TutorialOverlay";
 import { RankUpOverlay } from "../components/LevelUpOverlay";
 import { xpRequiredForLevel } from "../systems/xpSystem";
-
-// ─── Theme ────────────────────────────────────────────────────────────────────
-const C = {
-  bg:           "#000000",
-  surface:      "#0a0a10",
-  surface2:     "#101018",
-  border:       "#2a2a3d",
-  borderGlow:   "#4a3f8a",
-  accent:       "#e8c84a",
-  text:         "#e8e0f0",
-  textDim:      "#6a6080",
-  success:      "#55c080",
-  str:          "#e05555",
-  agi:          "#55c080",
-  end:          "#5599e0",
-  vit:          "#e055aa",
-};
 
 const STAT_CONFIG = {
   STR: { label: "Fuerza",       color: "#e05555", emoji: "⚔️",  desc: "Potencia en flexiones" },
@@ -168,10 +153,10 @@ export default function StatisticsScreen({ navigation }) {
 
         {/* ── Header ── */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-            <Text style={styles.backText}>←</Text>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={g.backBtn}>
+            <Text style={g.backBtnText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>ESTADÍSTICAS</Text>
+          <Text style={g.headerTitle}>ESTADÍSTICAS</Text>
           <View style={{ width:40 }} />
           <View style={{ width: 70 }} />
         </View>
@@ -250,7 +235,7 @@ export default function StatisticsScreen({ navigation }) {
 
         {/* ── Overview Grid ── */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>RESUMEN</Text>
+          <Text style={g.sectionLabel}>RESUMEN</Text>
           <View style={styles.overviewGrid}>
             {overviewItems.map((item) => (
               <View key={item.label} style={styles.overviewCard}>
@@ -264,7 +249,7 @@ export default function StatisticsScreen({ navigation }) {
         {/* ── Stats Bars ── */}
         <View style={styles.section}>
           <View style={styles.sectionRow}>
-            <Text style={styles.sectionLabel}>ATRIBUTOS</Text>
+            <Text style={g.sectionLabel}>ATRIBUTOS</Text>
             <Text style={styles.statsTotalBadge}>Total: {totalStats}</Text>
           </View>
           <View style={styles.statsCard}>
@@ -300,7 +285,7 @@ export default function StatisticsScreen({ navigation }) {
 
         {/* ── All Ranks ── */}
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>TODOS LOS RANGOS</Text>
+          <Text style={g.sectionLabel}>TODOS LOS RANGOS</Text>
           <View style={styles.allRanksCard}>
             {RANKS.map((rank, idx) => {
               const isCurrent  = rank.id === currentRank.id;
