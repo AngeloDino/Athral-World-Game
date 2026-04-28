@@ -12,7 +12,7 @@
 
 ## 🎮 Demo
 
-> 📹 **[Watch the app in action →]()
+> 📹 **[Watch the app in action →](https://youtube.com/shorts/ar3ruSxsTAY)
 
 ---
 
