@@ -46,3 +46,7 @@ yarn-error.*
 # cmdtools
 cmdtools/
 "cmdtools.zip" 
+
+# env files
+.env
+.env.local
