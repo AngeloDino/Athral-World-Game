@@ -16,13 +16,13 @@ const ZONE_BACKGROUNDS = {
 };
 
 const CLASS_ART = {
-  knight:    { m: require("../assets/classes/knight_m.png"),    f: require("../assets/classes/knight_f.png") },
-  gladiator: { m: require("../assets/classes/gladiator_m.png"), f: require("../assets/classes/gladiator_f.png") },
-  barbarian: { m: require("../assets/classes/barbarian_m.png"), f: require("../assets/classes/barbarian_f.png") },
-  mage:      { m: require("../assets/classes/mage_m.png"),      f: require("../assets/classes/mage_f.png") },
-  archer:    { m: require("../assets/classes/archer_m.png"),    f: require("../assets/classes/archer_f.png") },
-  assassin:  { m: require("../assets/classes/assassin_m.png"),  f: require("../assets/classes/assassin_f.png") },
-  scientist: { m: require("../assets/classes/scientist_m.png"), f: require("../assets/classes/scientist_f.png") },
+  knight:    { m: require("../assets/classes/battle/knight_m_battle.png"),    f: require("../assets/classes/battle/knight_f_battle.png") },
+  gladiator: { m: require("../assets/classes/battle/gladiator_m_battle.png"), f: require("../assets/classes/battle/gladiator_f_battle.png") },
+  barbarian: { m: require("../assets/classes/battle/barbarian_m_battle.png"), f: require("../assets/classes/battle/barbarian_f_battle.png") },
+  mage:      { m: require("../assets/classes/battle/mage_m_battle.png"),      f: require("../assets/classes/battle/mage_f_battle.png") },
+  archer:    { m: require("../assets/classes/battle/archer_m_battle.png"),    f: require("../assets/classes/battle/archer_f_battle.png") },
+  assassin:  { m: require("../assets/classes/battle/assassin_m_battle.png"),  f: require("../assets/classes/battle/assassin_f_battle.png") },
+  scientist: { m: require("../assets/classes/battle/scientist_m_battle.png"), f: require("../assets/classes/battle/scientist_f_battle.png") },
 };
 
 function getClassArt(classId, gender) {
@@ -42,7 +42,7 @@ export default function BattleIntro({ playerClass, playerGender, monster, onStar
   const vsOp        = useRef(new Animated.Value(0)).current;
 
   const playerArt  = getClassArt(playerClass, playerGender);
-  const monsterArt = monster?.art ?? null;
+  const monsterArt = monster?.battleArt ?? monster?.art ?? null;
 
   useEffect(() => {
     Animated.sequence([
@@ -118,7 +118,7 @@ export default function BattleIntro({ playerClass, playerGender, monster, onStar
         {/* Monstruo derecha */}
         <Animated.View style={[styles.side, { transform:[{ translateX: monsterX }] }]}>
           {monsterArt ? (
-            <Image source={monsterArt} style={[styles.charImg]} resizeMode="contain" />
+            <Image source={monsterArt} style={[styles.charImg, ]} resizeMode="contain" />
           ) : (
             <Text style={styles.fallback}>{monster?.emoji ?? "👹"}</Text>
           )}
@@ -162,26 +162,26 @@ const styles = StyleSheet.create({
   zoneBg:         { ...StyleSheet.absoluteFillObject, width:"100%", height:"100%" },
   zoneBgOverlay:  { ...StyleSheet.absoluteFillObject, backgroundColor:"#00000077" },
 
-  exitRow:  { paddingTop:52, paddingHorizontal:16, paddingBottom:4 },
-  exitBtn:  { alignSelf:"flex-start", paddingVertical:6, paddingHorizontal:12, borderWidth:1, borderColor:"#ffffff44", borderRadius:4, backgroundColor:"#00000066" },
+  exitRow:  { position:"absolute", top:52, left:16, zIndex:10 },
+  exitBtn:  { paddingVertical:6, paddingHorizontal:12, borderWidth:1, borderColor:"#ffffff44", borderRadius:4, backgroundColor:"#00000066" },
   exitText: { color:"#ffffff99", fontSize:11, fontWeight:"700", letterSpacing:1 },
 
-  topInfo:     { alignItems:"center", gap:6, paddingHorizontal:24, paddingTop:8 },
+  topInfo:     { paddingTop:60, alignItems:"center", gap:6, paddingHorizontal:24 },
   monsterName: { color:"#e8e0f0", fontSize:20, fontWeight:"900", letterSpacing:2, textAlign:"center" },
   tierBadge:   { borderWidth:1, borderRadius:4, paddingHorizontal:12, paddingVertical:4 },
   tierText:    { fontSize:10, fontWeight:"900", letterSpacing:2 },
 
   // Arena
-  arena:  { flex:1, flexDirection:"row", alignItems:"center", justifyContent:"space-evenly", paddingHorizontal:16, minHeight:200 },
-  side:   { width: W * 0.36, alignItems:"center", gap:6 },
-  charImg:{ width: W * 0.36, height: H * 0.40, alignSelf:"center" },
+  arena:  { flex:1, flexDirection:"row", alignItems:"center", justifyContent:"space-evenly", paddingHorizontal:4, minHeight:200 },
+  side:   { width: W * 0.46, alignItems:"center", gap:6 },
+  charImg:{ width: W * 0.46, height: H * 0.52, alignSelf:"center" },
   fallback:{ fontSize:70 },
   sideLabel:{ color:"#6a6080", fontSize:9, fontWeight:"700", letterSpacing:2 },
 
-  center: { width: W * 0.10, alignItems:"center", justifyContent:"center" },
+  center: { width: W * 0.08, alignItems:"center", justifyContent:"center" },
   vs:     { color:"#e8c84a", fontSize:18, fontWeight:"900", letterSpacing:2 },
   impact: { position:"absolute" },
-  impactEmoji:{ fontSize:36, marginTop:-12 },
+  impactEmoji:{ fontSize:36 },
 
   // Info
   infoRow:    { flexDirection:"row", marginHorizontal:16, backgroundColor:"#0a0a10", borderRadius:8, borderWidth:1, borderColor:"#2a2a3d" },

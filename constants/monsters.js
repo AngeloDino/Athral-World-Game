@@ -90,6 +90,7 @@ export const MONSTERS = {
     statReward:{ STR:1 },
     description:"Una masa carmesí que absorbe todo a su paso. Su núcleo verde brilla con energía maligna.",
     art:    require("../assets/monsters/dark_forest/slime.png"),
+    battleArt: require("../assets/monsters/dark_forest/slime_battle.png"),
     sprite: require("../assets/monsters/dark_forest/slime_sprite.png"),
   },
   lobo_sombra: {
@@ -98,6 +99,7 @@ export const MONSTERS = {
     statReward:{ AGI:1 },
     description:"Una bestia encadenada y armada. Sus ojos rojos no conocen la piedad ni el cansancio.",
     art:    require("../assets/monsters/dark_forest/wolf.png"),
+    battleArt: require("../assets/monsters/dark_forest/wolf_battle.png"),
     sprite: require("../assets/monsters/dark_forest/wolf_sprite.png"),
   },
   goblin_verde: {
@@ -106,6 +108,7 @@ export const MONSTERS = {
     statReward:{ END:1 },
     description:"Agresivo y ruidoso. Su hacha dentada ha derramado más sangre de la que parece capaz.",
     art:    require("../assets/monsters/dark_forest/green_gob.png"),
+    battleArt: require("../assets/monsters/dark_forest/green_gob_battle.png"),
     sprite: require("../assets/monsters/dark_forest/green_gob_sprite.png"),
   },
   goblin_etereo: {
@@ -115,6 +118,7 @@ export const MONSTERS = {
     statReward:{ STR:2, AGI:1 },
     description:"Un goblin imbuido de energía de cristal. Rara vez se manifiesta en el Bosque... pero cuando aparece, es brutal.",
     art:    require("../assets/monsters/dark_forest/blue_gob.png"),
+    battleArt: require("../assets/monsters/dark_forest/blue_gob_battle.png"),
     sprite: require("../assets/monsters/dark_forest/blue_gob_sprite.png"),
   },
 
@@ -148,6 +152,7 @@ export const BOSSES = {
     statReward: { STR:2, AGI:2, END:2, VIT:1 },
     description: "El espíritu del bosque corrompido por una fuerza ancestral. Sus ojos brillan con veneno y sus raíces devoran todo a su paso.",
     art: require("../assets/monsters/dark_forest/forest_guardian.png"),
+    battleArt: require("../assets/monsters/dark_forest/forest_guardian_battle.png"),
     phases: [
       { exercise:"pushups", reps:20, timer:90,  label:"Fase I  — Garras de Raíz" },
       { exercise:"squats",  reps:20, timer:90,  label:"Fase II — Tormenta de Espinas" },
